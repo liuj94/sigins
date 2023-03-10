@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F3F4F8"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/white"
+        >
+
+        <ImageView
+            android:id="@+id/goback"
+            android:layout_width="60dp"
+            android:layout_height="50dp"
+            android:padding="13dp"
+            android:src="@mipmap/arrowsleft" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="参会人信息"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingLeft="13dp"
+            android:paddingRight="13dp">
+
+            <include
+                android:id="@+id/item_yhxx"
+                layout="@layout/item_yhxx" />
+
+            <include
+                android:id="@+id/item_ddxx"
+                layout="@layout/item_ddxx" />
+
+            <LinearLayout
+                android:visibility="gone"
+                android:orientation="vertical"
+                android:id="@+id/infoLl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+               >
+
+
+                <include
+                    android:id="@+id/item_lcxx"
+                    layout="@layout/item_lcxx" />
+
+
+                <include
+                    android:id="@+id/item_zcbd"
+                    layout="@layout/item_zcbd" />
+
+                <include
+                    android:id="@+id/item_rzxx"
+                    layout="@layout/item_rzxx" />
+
+                <include
+                    android:id="@+id/item_hcqd"
+                    layout="@layout/item_hcqd" />
+
+                <include
+                    android:id="@+id/item_cyxi"
+                    layout="@layout/item_cyxi" />
+
+
+                <include
+                    android:id="@+id/item_fcxx"
+                    layout="@layout/item_fcxx" />
+                <!-- 礼品发放-->
+                <include
+                    android:id="@+id/item_lpff"
+                    layout="@layout/item_lpff" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="21dp"
+                android:gravity="center"
+                android:paddingBottom="27dp"
+                android:text="码上互动提供服务"
+                android:textColor="#ff999999"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

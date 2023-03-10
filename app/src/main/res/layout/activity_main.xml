@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?><!--<layout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto">-->
+
+<!--    <data>-->
+
+<!--    </data>-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F3F4F8"
+    android:fitsSystemWindows="true">
+
+
+    <com.example.zjsignin.view.NoScrollViewPager
+        android:id="@+id/mViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <RadioGroup
+        android:id="@+id/mMainBottomRg"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/white"
+        android:checkedButton="@id/mMainHomeRb"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mViewPager">
+
+        <RadioButton
+
+            android:id="@+id/mMainHomeRb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#00000000"
+            android:button="@null"
+            android:drawableTop="@drawable/bg_main_home"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:text="会议列表"
+            android:textColor="@drawable/color_main_bottom_bar_text"
+            android:textSize="10sp" />
+
+
+
+
+
+
+
+
+
+        <RadioButton
+
+            android:id="@+id/mMainMineRb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#00000000"
+            android:button="@null"
+            android:drawableTop="@drawable/bg_main_my"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:text="个人中心"
+            android:textColor="@drawable/color_main_bottom_bar_text"
+            android:textSize="10dp" />
+
+    </RadioGroup>
+
+
+</LinearLayout><!--</layout>-->
