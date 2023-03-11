@@ -10,6 +10,7 @@ interface PageRoutes {
 
         //登录
         val Api_login = "$BaseUrlApi/zhaji/find/sign/up/location?nodeNo="
+        val Api_user_data = "$BaseUrlApi/zhaji/user/meeting/info?userMeetingId="
 //        val Api_login = "$BaseUrlApi/login"
         val Api_editUser = "$BaseUrlApi/manager/system/user"
 //        val Api_getUserInfo = "$BaseUrlApi/getInfo"

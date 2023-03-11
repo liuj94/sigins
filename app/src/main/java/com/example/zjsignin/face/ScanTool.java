@@ -96,6 +96,7 @@ public class ScanTool {
         this.mScanCallBack = null;
         LocalBroadcastManager.getInstance((Context)this.mContext.get()).unregisterReceiver(this.mBroadcastReceiver);
         if (this.mContext != null) {
+
             ((Context)this.mContext.get()).stopService(new Intent((Context)this.mContext.get(), ScanService.class));
         }
 

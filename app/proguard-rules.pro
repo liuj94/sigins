@@ -752,3 +752,6 @@ public static java.lang.String TABLENAME;
 -keep public class com.tencent.bugly.**{*;}
 
 -keep class io.agora.**{*;}
+-keep class com.example.zjsignin.**{*;}
+-keep class com.hello.**{*;}
+

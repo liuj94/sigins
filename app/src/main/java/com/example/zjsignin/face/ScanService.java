@@ -55,24 +55,31 @@ public class ScanService extends Service {
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String cmd = intent.getStringExtra("cmd");
-        Bundle bundle = intent.getBundleExtra("data");
-        if (!TextUtils.isEmpty(cmd)) {
-            switch (cmd) {
-                case "resume_receive_data":
-                    ScanToolImpl.getInstance().startReceiveData();
-                    break;
-                case "pause_receive_data":
-                    ScanToolImpl.getInstance().stopReceiveData();
-                    break;
-                case "play_sound":
-                    boolean play = bundle.getBoolean("play", false);
-                    ScanToolImpl.getInstance().playSound(play);
-                    break;
-                case "init_serial":
-                    ScanToolImpl.getInstance().init();
-                    ScanToolImpl.getInstance().startReceiveData();
-                    IoUtil.turnOn();
+        try {
+            if(intent==null){
+                return 0;
+            }
+            String cmd = intent.getStringExtra("cmd");
+            Bundle bundle = intent.getBundleExtra("data");
+            if (!TextUtils.isEmpty(cmd)) {
+                switch (cmd) {
+                    case "resume_receive_data":
+                        ScanToolImpl.getInstance().startReceiveData();
+                        break;
+                    case "pause_receive_data":
+                        ScanToolImpl.getInstance().stopReceiveData();
+                        break;
+                    case "play_sound":
+                        boolean play = bundle.getBoolean("play", false);
+                        ScanToolImpl.getInstance().playSound(play);
+                        break;
+                    case "init_serial":
+                        try {
+                        ScanToolImpl.getInstance().init();
+                        ScanToolImpl.getInstance().startReceiveData();
+                        IoUtil.turnOn();}catch (Exception e){
+
+                        }
 //                    if (ScanToolImpl.getInstance().isCdcModel()) {
 //                        Log.e("Hello", "onStartCommand == > CDC模式");
 ////                        IoUtil.turnOff();
@@ -84,19 +91,27 @@ public class ScanService extends Service {
 //                            ScanToolImpl.getInstance().startReceiveData();
 //                        }
 //                    }
+                }
             }
+            return super.onStartCommand(intent, flags, startId);
+        }catch (Exception e){
+
         }
 
-        return super.onStartCommand(intent, flags, startId);
+        return 0;
     }
 
     public void onDestroy() {
+        try {
         this.unregisterReceiver(this.mBroadcastReceiver);
         ScanToolImpl.getInstance().release();
         DataPostman.getInstance().release();
         SoundPlayer.getInstance().release();
         IoUtil.turnOff();
         Log.v("Hello", "ScanService onDestroy == > call");
+        }catch (Exception e){
+
+        }
     }
 
     @Nullable

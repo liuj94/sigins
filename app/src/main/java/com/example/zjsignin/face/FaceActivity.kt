@@ -4,22 +4,28 @@ import android.graphics.Bitmap
 import android.hardware.Camera
 import android.media.FaceDetector
 import android.media.MediaPlayer
-import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import com.alibaba.fastjson.JSON
 import com.bifan.detectlib.FaceDetectTextureView
+import com.bumptech.glide.Glide
 import com.dylanc.longan.mainThread
 import com.dylanc.longan.toast
+import com.example.zjsignin.AppManager
 import com.example.zjsignin.LiveDataBus
+import com.example.zjsignin.PageRoutes
+import com.example.zjsignin.PageRoutes.Companion.BaseUrl
 import com.example.zjsignin.R
 import com.example.zjsignin.base.BaseBindingActivity
 import com.example.zjsignin.base.BaseViewModel
+import com.example.zjsignin.bean.MeetingUserDeData
 import com.example.zjsignin.bean.SignUpUser
 import com.example.zjsignin.databinding.ActivityFaceBinding
-import com.hello.scan.ScanCallBack
+import com.example.zjsignin.net.RequestCallback
+import com.lzy.okgo.OkGo
+import com.lzy.okgo.model.Response
 import com.tencent.mmkv.MMKV
 import search
 import sigin
@@ -29,29 +35,18 @@ import java.util.*
 import java.util.concurrent.Executors
 
 
-class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), ScanCallBack {
+class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() {
     override fun getViewModel(): Class<BaseViewModel> = BaseViewModel::class.java
     var preFrameList: MutableList<Bitmap> = ArrayList<Bitmap>()
 
-    var scanTool: ScanTool? = null
-    var jgTimer = Timer()
-    val jgTask: TimerTask = object : TimerTask() {
-        override fun run() {
-            mainThread {
-                isSavingPic = false
-                mViewModel.isShowLoading.value = false
-                binding.jieguo.visibility = View.GONE
-            }
 
-        }
-    }
+
+
 
     override fun initData() {
+        AppManager.getAppManager().addActivity(this)
 
 
-        scanTool = ScanTool()
-        scanTool?.initSerial(this, "/dev/ttyACM0", 115200, this@FaceActivity)
-        scanTool?.playSound(true)
         binding.test.setOnClickListener { startDetect() }
 
         binding.faceDetectView.framePreViewListener =
@@ -113,8 +108,15 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
         timer.schedule(task, 1500)
         LiveDataBus.get().with("onScanCallBack", String::class.java)
             .observeForever {
-                var signUpUser = JSON.parseObject(it, SignUpUser::class.java)
-                sigin(signUpUser.id)
+                mViewModel.isShowLoading.value = true
+                try {
+                    var signUpUser = JSON.parseObject(it, SignUpUser::class.java)
+                    getUserData(signUpUser.id)
+                }catch (e :java.lang.Exception){
+                    toast("二维码信息错误")
+                }
+
+
             }
     }
 
@@ -219,9 +221,9 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
 //            var urlString = "https://img-blog.csdnimg.cn/20190618124505345.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2EzMTI4NjMwNjM=,size_16,color_FFFFFF,t_70"
 
-            var urlString = it.url
+//            var urlString = it.url
 //            detect(urlString,{
-//                var urlString = "https://meeting.nbqichen.com:20882/profile/upload/2023/03/09/ac479084-cff7-40a1-a7fe-480e6c8f4523.jpg"
+                var urlString = "https://meeting.nbqichen.com:20882/profile/upload/2023/03/09/ac479084-cff7-40a1-a7fe-480e6c8f4523.jpg"
             search(urlString, {
 
                 it.result?.let { result ->
@@ -229,8 +231,9 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                     if (!result.user_list.isNullOrEmpty()) {
 
                         for (item in result.user_list) {
+                            getUserData(item.user_id)
+//                            getUserData("129")
 
-                            sigin(item.user_id)
                         }
                     }
 
@@ -238,7 +241,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                 }
 
             }, {
-                setFinishData("-5000")
+                setFinishData("-5000",it)
 
 
             }, {
@@ -303,39 +306,32 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
             setFinishData("0",it)
         }, {
             isSavingPic = false
+            mViewModel.isShowLoading.value = true
         })
     }
 
     override fun onDestroy() {
         super.onDestroy()
         endDetect()
-        scanTool?.release()
+        AppManager.getAppManager().removeActivity(this)
     }
 
-    override fun onScanCallBack(data: String?) {
-        if (TextUtils.isEmpty(data)) return
-        Log.e("Hello", "回调数据 == > $data")
-        data?.let {
-            LiveDataBus.get().with("onScanCallBack").postValue(data)
-        }
-    }
 
-    override fun onInitScan(isSuccess: Boolean) {
-//        val str = if (isSuccess) "初始化成功" else "初始化失败"
-//        Toast.makeText(this, str, Toast.LENGTH_SHORT).show()
-//        Log.d("FaceActivity","str="+str)
 
-    }
+
 
     fun setFinishData(state: String,msg: String?="签到失败") {
         binding.stateIv.setImageResource(R.mipmap.qdcwicon)
-        binding.stateTv.setText("签到失败")
-        binding.jgsb.visibility = View.VISIBLE
-        binding.jgcg.visibility = View.GONE
+        binding.stateTv.setText(msg)
+        binding.jgsb.visibility = View.GONE
+        binding.jgcg.visibility = View.VISIBLE
         when (state) {
             "-5000" -> {
+                binding.jgsb.visibility = View.VISIBLE
+                binding.jgcg.visibility = View.GONE
+                binding.sbtv.setText("查无信息")
                 binding.stateIv.setImageResource(R.mipmap.qdcwicon)
-                binding.stateTv.setText("识别失败")
+                binding.stateTv.setText(msg)
 
             }
             "1" -> {
@@ -360,9 +356,50 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
             }
         }
-        jgTimer.schedule(jgTask, 3000)
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                mainThread {
+                    isSavingPic = false
+                    mViewModel.isShowLoading.value = false
+                    binding.jieguo.visibility = View.GONE
+                }
+
+            }}, 3000)
         binding.jieguo.visibility = View.VISIBLE
 
     }
+    private fun getUserData(id:String) {
 
+        OkGo.get<MeetingUserDeData>(PageRoutes.Api_user_data + id )
+            .tag(PageRoutes.Api_user_data + id )
+
+            .execute(object : RequestCallback<MeetingUserDeData>() {
+                override fun onSuccessNullData() {
+                    super.onSuccessNullData()
+
+                }
+
+                override fun onMySuccess(data: MeetingUserDeData) {
+                    super.onMySuccess(data)
+                    Glide.with(this@FaceActivity).load(BaseUrl + data.avatar).into(binding.img)
+                    binding.name.text = ""+data.name
+                    binding.phone.text = ""+data.corporateName
+
+                }
+
+                override fun onError(response: Response<MeetingUserDeData>) {
+                    Glide.with(this@FaceActivity).load(BaseUrl).into(binding.img)
+                    binding.name.text = ""
+                    binding.phone.text = ""
+
+                }
+
+                override fun onFinish() {
+                    super.onFinish()
+                    sigin(id)
+                }
+
+
+            })
+    }
 }

@@ -6,6 +6,7 @@ import android.app.Application
 import android.content.Context
 import android.graphics.Typeface
 import android.os.Build
+import com.tencent.bugly.crashreport.CrashReport
 
 class App :  Application() {
     companion object {
@@ -21,7 +22,7 @@ class App :  Application() {
     override fun onCreate() {
         super.onCreate()
         mApplication = this
-
+        CrashReport.initCrashReport(this, "c171a11129", false)
         initUtils()
 
 

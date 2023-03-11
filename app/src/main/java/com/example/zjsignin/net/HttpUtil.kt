@@ -267,14 +267,14 @@ fun detect(img:String,success: (() -> Unit)? = null,error: (() -> Unit)? = null)
         })
 }
 
-fun search(img:String,success: ((data: FaceData) -> Unit)? = null,error: (() -> Unit)? = null,finish: (() -> Unit)? = null) {
+fun search(img:String,success: ((data: FaceData) -> Unit)? = null,error: ((String) -> Unit)? = null,finish: (() -> Unit)? = null) {
     OkGo.get<FaceData>(PageRoutes.Api_search+img)
         .tag(PageRoutes.Api_search)
 
         .execute(object : RequestCallback<FaceData>() {
             override fun onSuccessNullData() {
                 super.onSuccessNullData()
-                error?.invoke()
+                error?.invoke("查无信息")
             }
 
             override fun onMySuccess(data: FaceData) {
@@ -285,7 +285,7 @@ fun search(img:String,success: ((data: FaceData) -> Unit)? = null,error: (() -> 
 
             override fun onError(response: Response<FaceData>?) {
                 super.onError(response)
-                error?.invoke()
+                error?.invoke(""+response?.exception?.message)
 
             }
 
