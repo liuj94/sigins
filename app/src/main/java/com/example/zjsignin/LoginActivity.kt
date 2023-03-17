@@ -1,8 +1,6 @@
 package com.example.zjsignin
 
 import android.graphics.Color
-import android.text.TextUtils
-import android.util.Log
 import com.dylanc.longan.activity
 import com.dylanc.longan.startActivity
 import com.dylanc.longan.toast
@@ -12,9 +10,7 @@ import com.example.zjsignin.base.StatusBarUtil
 import com.example.zjsignin.bean.ZjData
 import com.example.zjsignin.databinding.ActLoginBinding
 import com.example.zjsignin.face.FaceActivity
-import com.example.zjsignin.face.ScanTool
 import com.example.zjsignin.net.RequestCallback
-import com.hello.scan.ScanCallBack
 import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
@@ -22,8 +18,8 @@ import com.lzy.okgo.OkGo
 import com.lzy.okgo.model.Response
 
 
-class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() , ScanCallBack {
-    var scanTool: ScanTool? = null
+class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>()  {
+
     override fun initTranslucentStatus() {
         StatusBarUtil.setTranslucentStatus(this, Color.TRANSPARENT)
         //设置状态栏字体颜色
@@ -34,9 +30,7 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() , Sc
 
     override fun initData() {
 
-        scanTool = ScanTool()
-        scanTool?.initSerial(this, "/dev/ttyACM0", 115200, this@LoginActivity)
-        scanTool?.playSound(true)
+
         binding.login.setOnClickListener {
 
             mViewModel.isShowLoading.value = true
@@ -100,12 +94,7 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() , Sc
 
     }
 
-    override fun onDestroy() {
-        scanTool?.pauseReceiveData()
-        scanTool?.release()
-        super.onDestroy()
 
-    }
 
     private var exitTime: Long = 0
     override fun onBackPressed() {
@@ -117,17 +106,7 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() , Sc
             System.exit(0);
         }
     }
-    override fun onScanCallBack(data: String?) {
-        if(AppManager.getAppManager().activityClassIsLive(FaceActivity::class.java)){
-            if (TextUtils.isEmpty(data)) return
-            Log.e("Hello", "回调数据 == > $data")
-            data?.let {
-                LiveDataBus.get().with("onScanCallBack").postValue(data)
 
-            }
-        }
-
-    }
 }
 
 

@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.hardware.Camera
 import android.media.FaceDetector
 import android.media.MediaPlayer
+import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +15,6 @@ import com.bumptech.glide.Glide
 import com.dylanc.longan.mainThread
 import com.dylanc.longan.toast
 import com.example.zjsignin.AppManager
-import com.example.zjsignin.LiveDataBus
 import com.example.zjsignin.PageRoutes
 import com.example.zjsignin.PageRoutes.Companion.BaseUrl
 import com.example.zjsignin.R
@@ -24,9 +24,9 @@ import com.example.zjsignin.bean.MeetingUserDeData
 import com.example.zjsignin.bean.SignUpUser
 import com.example.zjsignin.databinding.ActivityFaceBinding
 import com.example.zjsignin.net.RequestCallback
+import com.hello.scan.ScanCallBack
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.model.Response
-import com.tencent.mmkv.MMKV
 import search
 import sigin
 import upFile
@@ -35,7 +35,8 @@ import java.util.*
 import java.util.concurrent.Executors
 
 
-class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() {
+class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() , ScanCallBack {
+    var scanTool: ScanTool? = null
     override fun getViewModel(): Class<BaseViewModel> = BaseViewModel::class.java
     var preFrameList: MutableList<Bitmap> = ArrayList<Bitmap>()
 
@@ -45,7 +46,9 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() {
 
     override fun initData() {
         AppManager.getAppManager().addActivity(this)
-
+        scanTool = ScanTool()
+        scanTool?.initSerial(this, "/dev/ttyACM0", 115200, this@FaceActivity)
+        scanTool?.playSound(true)
 
         binding.test.setOnClickListener { startDetect() }
 
@@ -72,7 +75,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() {
                                 preFrameList.add(it)
                             }
                             if (preFrameList.size > 5) {
-                                Log.i("FaceActivity", "preFrameList.size ==：" + preFrameList.size)
+
                                 isSavingPic = true
                                 preFrame?.let {
 //                        executorService.submit(SavePicRunnable(it))
@@ -106,18 +109,18 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() {
 
         val timer = Timer()
         timer.schedule(task, 1500)
-        LiveDataBus.get().with("onScanCallBack", String::class.java)
-            .observeForever {
-                mViewModel.isShowLoading.value = true
-                try {
-                    var signUpUser = JSON.parseObject(it, SignUpUser::class.java)
-                    getUserData(signUpUser.id)
-                }catch (e :java.lang.Exception){
-                    toast("二维码信息错误")
-                }
-
-
-            }
+//        LiveDataBus.get().with("onScanCallBack", String::class.java)
+//            .observeForever {
+//                mViewModel.isShowLoading.value = true
+//                try {
+//                    var signUpUser = JSON.parseObject(it, SignUpUser::class.java)
+//                    getUserData(signUpUser.id)
+//                }catch (e :java.lang.Exception){
+//                    toast("二维码信息错误")
+//                }
+//
+//
+//            }
     }
 
     private fun showToast(state: String) {
@@ -163,7 +166,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() {
     }
 
     private fun saveFacePicToLocal(bitmap: Bitmap) {
-        Log.e("FaceActivity", "saveFacePicToLocal=isSavingPic=" + isSavingPic)
+
         val picPath = this.externalCacheDir.toString() + File.separator + "face.jpg"
         var fileOutputStream: FileOutputStream? = null
         val facePicFile = File(picPath)
@@ -171,7 +174,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() {
             facePicFile.createNewFile()
         } catch (e: IOException) {
             isSavingPic = false
-            Log.e("FaceActivity", "保存失败$e,$picPath")
+
             e.printStackTrace()
         }
         try {
@@ -272,17 +275,14 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() {
     private fun sigin(userMeetingId: String) {
 
         var params = HashMap<String, String>()
-        params["codeNo"] = "" + MMKV.mmkvWithID("MyDataMMKV").getString("codeNo", "")
+        params["codeNo"] = "" + kv.getString("codeNo", "")
         params["userMeetingId"] = userMeetingId//用户参与会议id
 
 
-//        {
-//            "codeNo": "",
-//            "userMeetingId": 0
-//        }
+
         sigin(JSON.toJSONString(params), { success ->
 
-            if (MMKV.mmkvWithID("MyDataMMKV").getString("shockStatus", "2").equals("1")) {
+            if (kv.getString("shockStatus", "1").equals("1")) {
 
                 if (mRingPlayer != null) {
                     mRingPlayer?.stop();
@@ -311,12 +311,30 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
-        endDetect()
         AppManager.getAppManager().removeActivity(this)
+        endDetect()
+        scanTool?.pauseReceiveData()
+        scanTool?.release()
+        super.onDestroy()
+
     }
 
+    override fun onScanCallBack(data: String?) {
+        if(AppManager.getAppManager().activityClassIsLive(FaceActivity::class.java)){
+            if (TextUtils.isEmpty(data)) return
+            data?.let {
+                mViewModel.isShowLoading.value = true
+                try {
+                    var signUpUser = JSON.parseObject(it, SignUpUser::class.java)
+                    getUserData(signUpUser.id)
+                }catch (e :java.lang.Exception){
+                    toast("二维码信息错误")
+                }
 
+            }
+        }
+
+    }
 
 
 
