@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     tools:context=".face.FaceActivity">
 
     <com.bifan.detectlib.FaceDetectView
@@ -20,6 +21,19 @@
         android:layout_height="wrap_content"
         android:text="开启检测"
         android:visibility="gone"
+        tools:ignore="MissingConstraints" />
+    <Button
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:textColor="#fff"
+        android:background="@drawable/shape_bg_ff3974f6_10"
+        android:id="@+id/scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="切换纯扫码模式"
+
         tools:ignore="MissingConstraints" />
     <LinearLayout
         android:visibility="gone"
@@ -46,7 +60,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="签到成功"
+                android:text=""
                 android:textColor="#ffffffff"
                 android:textSize="27sp"
                 android:textStyle="bold"

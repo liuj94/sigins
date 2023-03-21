@@ -49,6 +49,7 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>()  {
 //                        kv.putString("ZjData",data.toString())
                         kv.putString("codeNo", data.codeNo)
                         kv.putString("shockStatus", data.speechStatus)
+                        kv.putString("meetingId", data.meetingId)
                         activity?.let {
                             XXPermissions.with(activity)
                                 .permission(Permission.CAMERA)

@@ -22,6 +22,7 @@ class App :  Application() {
     override fun onCreate() {
         super.onCreate()
         mApplication = this
+        AppManager.getAppManager().init(mApplication)
         CrashReport.initCrashReport(this, "c171a11129", false)
         initUtils()
 

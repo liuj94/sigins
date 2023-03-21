@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.hardware.Camera
 import android.media.FaceDetector
 import android.media.MediaPlayer
-import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -35,13 +34,10 @@ import java.util.*
 import java.util.concurrent.Executors
 
 
-class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() , ScanCallBack {
+class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), ScanCallBack {
     var scanTool: ScanTool? = null
     override fun getViewModel(): Class<BaseViewModel> = BaseViewModel::class.java
     var preFrameList: MutableList<Bitmap> = ArrayList<Bitmap>()
-
-
-
 
 
     override fun initData() {
@@ -51,7 +47,12 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
         scanTool?.playSound(true)
 
         binding.test.setOnClickListener { startDetect() }
-
+        Glide.with(this@FaceActivity).load(BaseUrl).into(binding.img)
+        binding.name.text = ""
+        binding.phone.text = ""
+        binding.jieguo.visibility = View.GONE
+        binding.jgsb.visibility = View.GONE
+        binding.jgcg.visibility = View.GONE
         binding.faceDetectView.framePreViewListener =
             object : FaceDetectTextureView.IFramePreViewListener {
                 override fun onFrame(preFrame: Bitmap?): Boolean {
@@ -67,29 +68,31 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
                 ): Boolean {
                     //faces是检测出来的人脸参数
                     //检测到人脸的回调,保存人脸图片到本地
+                    if (isHasInit) {
+                        if (!isSavingPic && !isScanTool) {
 
-                    if (!isSavingPic) {
-
-                        if (faces.size > 0) {
-                            preFrame?.let {
-                                preFrameList.add(it)
-                            }
-                            if (preFrameList.size > 5) {
-
-                                isSavingPic = true
+                            if (faces.size > 0) {
                                 preFrame?.let {
+                                    preFrameList.add(it)
+                                }
+                                if (preFrameList.size > 5) {
+
+                                    isSavingPic = true
+                                    preFrame?.let {
 //                        executorService.submit(SavePicRunnable(it))
-                                    executorService.submit {
-                                        saveFacePicToLocal(preFrame)
-                                        preFrameList.clear()
+                                        executorService.submit {
+                                            saveFacePicToLocal(preFrame)
+                                            preFrameList.clear()
+                                        }
                                     }
+
+
                                 }
 
-
                             }
-
                         }
                     }
+
 
                     //这个这帧preFrame处理了就是进行了回收，返回true
                     //否则返回false，内部进行回收处理
@@ -109,20 +112,20 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
 
         val timer = Timer()
         timer.schedule(task, 1500)
-//        LiveDataBus.get().with("onScanCallBack", String::class.java)
-//            .observeForever {
-//                mViewModel.isShowLoading.value = true
-//                try {
-//                    var signUpUser = JSON.parseObject(it, SignUpUser::class.java)
-//                    getUserData(signUpUser.id)
-//                }catch (e :java.lang.Exception){
-//                    toast("二维码信息错误")
-//                }
-//
-//
-//            }
-    }
 
+        binding.scan.setOnClickListener {
+            if(issScan){
+                binding.faceDetectView.visibility = View.VISIBLE
+                binding.faceDetectView.startCameraPreview()
+            }else{
+                binding.faceDetectView.stopCameraPreview()
+                binding.faceDetectView.faceRectView.clearBorder()
+                binding.faceDetectView.visibility = View.GONE
+            }
+
+        }
+    }
+var issScan = false
     private fun showToast(state: String) {
         var toast = Toast(this)
         var view: View = LayoutInflater.from(this).inflate(R.layout.tost_sb, null)
@@ -141,9 +144,12 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
     }
 
     private var isSavingPic = false
+    private var isScanTool = false
+    private var isHasInit = false
     private val executorService = Executors.newSingleThreadExecutor()
 
     fun startDetect() {
+        isHasInit = true
         if (!binding.faceDetectView.isHasInit) {
             //必须是在view可见后进行初始化
             binding.faceDetectView.initView()
@@ -167,7 +173,8 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
 
     private fun saveFacePicToLocal(bitmap: Bitmap) {
 
-        val picPath = this.externalCacheDir.toString() + File.separator + "face.jpg"
+        val picPath =
+            this.externalCacheDir.toString() + File.separator + System.currentTimeMillis() + "face.jpg"
         var fileOutputStream: FileOutputStream? = null
         val facePicFile = File(picPath)
         try {
@@ -224,33 +231,31 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
 
 //            var urlString = "https://img-blog.csdnimg.cn/20190618124505345.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2EzMTI4NjMwNjM=,size_16,color_FFFFFF,t_70"
 
-//            var urlString = it.url
+            var urlString = it.url + "&meetingId=" + kv.getString("meetingId", "0")
 //            detect(urlString,{
-                var urlString = "https://meeting.nbqichen.com:20882/profile/upload/2023/03/09/ac479084-cff7-40a1-a7fe-480e6c8f4523.jpg"
+//                var urlString = "https://meeting.nbqichen.com:20882/profile/upload/2023/03/09/ac479084-cff7-40a1-a7fe-480e6c8f4523.jpg"
             search(urlString, {
 
                 it.result?.let { result ->
 
                     if (!result.user_list.isNullOrEmpty()) {
-
-                        for (item in result.user_list) {
-                            getUserData(item.user_id)
-//                            getUserData("129")
-
+                        if (result.user_list.size > 0) {
+                            getUserData(result.user_list[0].user_id)
                         }
+
                     }
 
 
                 }
 
             }, {
-                setFinishData("-5000",it)
+                setFinishData("-5000", it)
 
 
             }, {
                 mViewModel.isShowLoading.value = false
             })
-//            },{isSavingPic = false})
+//            getUserData("154")
         }, {
             toast("图片上传失败")
             isSavingPic = false
@@ -272,6 +277,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
     }
 
     var mRingPlayer: MediaPlayer? = null
+    var test = false
     private fun sigin(userMeetingId: String) {
 
         var params = HashMap<String, String>()
@@ -279,31 +285,10 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
         params["userMeetingId"] = userMeetingId//用户参与会议id
 
 
-
         sigin(JSON.toJSONString(params), { success ->
-
-            if (kv.getString("shockStatus", "1").equals("1")) {
-
-                if (mRingPlayer != null) {
-                    mRingPlayer?.stop();
-                    mRingPlayer?.release();
-                    mRingPlayer = null;
-                }
-                //语音播报
-                if (success.equals("1")) {
-
-                    mRingPlayer = MediaPlayer.create(this, R.raw.cg);
-                    mRingPlayer?.start();
-
-
-                } else {
-                    mRingPlayer = MediaPlayer.create(this, R.raw.cf);
-                    mRingPlayer?.start();
-                }
-            }
             setFinishData(success)
         }, {
-            setFinishData("0",it)
+            setFinishData("0", it)
         }, {
             isSavingPic = false
             mViewModel.isShowLoading.value = true
@@ -320,31 +305,49 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
     }
 
     override fun onScanCallBack(data: String?) {
-        if(AppManager.getAppManager().activityClassIsLive(FaceActivity::class.java)){
-            if (TextUtils.isEmpty(data)) return
-            data?.let {
+        if(!isScanTool && !isSavingPic){
+            isScanTool = true
+            if (AppManager.getAppManager().activityClassIsLive(FaceActivity::class.java)) {
+                if (data.isNullOrEmpty()){
+                    isScanTool = false
+                    return
+                }
                 mViewModel.isShowLoading.value = true
                 try {
-                    var signUpUser = JSON.parseObject(it, SignUpUser::class.java)
+                    var signUpUser = JSON.parseObject(data, SignUpUser::class.java)
                     getUserData(signUpUser.id)
-                }catch (e :java.lang.Exception){
+                } catch (e: java.lang.Exception) {
                     toast("二维码信息错误")
+                    isScanTool = false
                 }
-
+            }else{
+                isScanTool = false
             }
         }
+
 
     }
 
 
-
-    fun setFinishData(state: String,msg: String?="签到失败") {
+    fun setFinishData(state: String, msg: String? = "签到失败") {
+        if (mRingPlayer != null) {
+            mRingPlayer?.stop();
+            mRingPlayer?.release();
+            mRingPlayer = null;
+        }
+        binding.jieguo.visibility = View.VISIBLE
         binding.stateIv.setImageResource(R.mipmap.qdcwicon)
         binding.stateTv.setText(msg)
         binding.jgsb.visibility = View.GONE
         binding.jgcg.visibility = View.VISIBLE
         when (state) {
+
             "-5000" -> {
+                if (kv.getString("shockStatus", "1").equals("1")) {
+                    //语音播报
+                    mRingPlayer = MediaPlayer.create(this, R.raw.cwqx);
+                    mRingPlayer?.start();
+                }
                 binding.jgsb.visibility = View.VISIBLE
                 binding.jgcg.visibility = View.GONE
                 binding.sbtv.setText("查无信息")
@@ -353,6 +356,10 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
 
             }
             "1" -> {
+                if (kv.getString("shockStatus", "1").equals("1")) {
+                    mRingPlayer = MediaPlayer.create(this, R.raw.cg);
+                    mRingPlayer?.start();
+                }
                 binding.jgsb.visibility = View.GONE
                 binding.jgcg.visibility = View.VISIBLE
                 binding.stateIv.setImageResource(R.mipmap.qdcgicon)
@@ -360,6 +367,11 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
 
             }
             "2" -> {
+                if (kv.getString("shockStatus", "1").equals("1")) {
+                    //语音播报
+                    mRingPlayer = MediaPlayer.create(this, R.raw.cf);
+                    mRingPlayer?.start();
+                }
                 binding.jgsb.visibility = View.GONE
                 binding.jgcg.visibility = View.VISIBLE
                 binding.stateIv.setImageResource(R.mipmap.qdjgicon)
@@ -371,25 +383,44 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
                 binding.jgcg.visibility = View.VISIBLE
                 binding.stateIv.setImageResource(R.mipmap.qdcwicon)
                 binding.stateTv.setText(msg)
+                if (kv.getString("shockStatus", "1").equals("1")) {
+                    if (msg != null) {
+                        if (msg.equals("未找到该用户的信息")) {
+                            mRingPlayer = MediaPlayer.create(this, R.raw.cwqx);
+                            mRingPlayer?.start();
+                        } else if (msg.contains("无权限")) {
+                            mRingPlayer = MediaPlayer.create(this, R.raw.wdqx);
+                            mRingPlayer?.start();
+                        }
+                    }
+
+
+                }
 
             }
         }
+
         Timer().schedule(object : TimerTask() {
             override fun run() {
                 mainThread {
                     isSavingPic = false
+                    isScanTool = false
                     mViewModel.isShowLoading.value = false
                     binding.jieguo.visibility = View.GONE
+                    binding.jgsb.visibility = View.GONE
+                    binding.jgcg.visibility = View.GONE
                 }
 
-            }}, 3000)
-        binding.jieguo.visibility = View.VISIBLE
+            }
+        }, 3000)
+
 
     }
-    private fun getUserData(id:String) {
 
-        OkGo.get<MeetingUserDeData>(PageRoutes.Api_user_data + id )
-            .tag(PageRoutes.Api_user_data + id )
+    private fun getUserData(id: String) {
+
+        OkGo.get<MeetingUserDeData>(PageRoutes.Api_user_data + id)
+            .tag(PageRoutes.Api_user_data + id)
 
             .execute(object : RequestCallback<MeetingUserDeData>() {
                 override fun onSuccessNullData() {
@@ -400,8 +431,8 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
                 override fun onMySuccess(data: MeetingUserDeData) {
                     super.onMySuccess(data)
                     Glide.with(this@FaceActivity).load(BaseUrl + data.avatar).into(binding.img)
-                    binding.name.text = ""+data.name
-                    binding.phone.text = ""+data.corporateName
+                    binding.name.text = "" + data.name
+                    binding.phone.text = "" + data.corporateName
 
                 }
 
@@ -420,4 +451,22 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>() ,
 
             })
     }
+
+//      fun deleteFile( filePath:String)
+//    {
+//        var file =  File(this.externalCacheDir.toString() + File.separator);
+//        if (file.isFile())  //判断是否为文件，是，则删除
+//        {
+//            file.delete();
+//        }
+//        else //不为文件，则为文件夹
+//        {
+//            var childFilePath = file.list();//获取文件夹下所有文件相对路径
+//            for ( path in childFilePath)
+//            {
+//                deleteFile(file.getAbsoluteFile()+"/"+path);//递归，对每个都进行判断
+//            }
+//            //file.delete(); // 如果不保留文件夹本身 则执行此行代码
+//        }
+//    }
 }

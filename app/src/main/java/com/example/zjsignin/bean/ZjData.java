@@ -102,7 +102,7 @@ public class ZjData implements Serializable {
     private int signUpType;
     private String userMeetingTypes;
     private String leveStatus;
-    private int meetingId;
+    private String meetingId;
     private int loginTimeStatus;
     private int insertUserInfoStatus;
     private int bingStatus;
@@ -375,11 +375,11 @@ public class ZjData implements Serializable {
         this.leveStatus = leveStatus;
     }
 
-    public int getMeetingId() {
+    public String getMeetingId() {
         return meetingId;
     }
 
-    public void setMeetingId(int meetingId) {
+    public void setMeetingId(String meetingId) {
         this.meetingId = meetingId;
     }
 

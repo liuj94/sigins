@@ -268,6 +268,7 @@ fun detect(img:String,success: (() -> Unit)? = null,error: (() -> Unit)? = null)
 }
 
 fun search(img:String,success: ((data: FaceData) -> Unit)? = null,error: ((String) -> Unit)? = null,finish: (() -> Unit)? = null) {
+
     OkGo.get<FaceData>(PageRoutes.Api_search+img)
         .tag(PageRoutes.Api_search)
 
