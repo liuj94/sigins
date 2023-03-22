@@ -3,13 +3,38 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="internalOnly">
 
+
+    <uses-permission
+        android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+        tools:ignore="ProtectedPermissions" />
+
+    <uses-permission android:name="android.hardware.camera.autofocus" />
+    <uses-permission
+        android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.front.autofocus"
+        android:required="true" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" /> <!-- <uses-permission android:name="android.permission.VIBRATE"/> -->
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <uses-permission
         android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"
         tools:ignore="ProtectedPermissions"
@@ -23,7 +48,7 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" /> <!-- 对于 Android 12.0 及以上设备，还需要添加如下权限： -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -50,8 +75,14 @@
         android:roundIcon="@mipmap/logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:replace="android:theme"
+        tools:replace="android:theme,android:allowBackup"
         tools:targetApi="31">
+        <meta-data
+            android:name="design_width_in_dp"
+            android:value="480" />
+        <meta-data
+            android:name="design_height_in_dp"
+            android:value="800" />
         <service
             android:name="com.example.zjsignin.face.ScanService"
             android:exported="true"
@@ -73,58 +104,16 @@
         </receiver>
 
 
-        <activity
-            android:name=".SiginReAutoActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SetActivity"
-            android:exported="false" />
-        <activity
-            android:name=".UserSetActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ExamineKPActivity"
-            android:exported="false"
-            android:windowSoftInputMode="stateVisible|adjustResize" />
-        <activity
-            android:name=".ExamineActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SiginReActivity"
-            android:exported="false"
-            android:windowSoftInputMode="stateVisible|adjustResize" />
-        <activity
-            android:name=".ScanActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MeetingSiginDectivity"
-            android:exported="false" />
-        <activity
-            android:name=".MeetingUserDectivity"
-            android:exported="false" />
-        <activity
-            android:name=".SigninSetActivity"
-            android:exported="false"
-            android:windowSoftInputMode="stateVisible|adjustResize" />
-        <activity
-            android:name=".AboutActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MeetingDeActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize|stateHidden" />
-        <activity
-            android:name=".MainHomeActivity"
-            android:exported="false" />
+
         <activity
             android:name=".SplashActivity"
             android:enabled="true"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
         </activity>
         <activity
             android:name=".LoginActivity"
@@ -139,6 +128,74 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <!-- 安全设备指纹接入 start -->
+        <activity
+            android:name="com.baidu.liantian.LiantianActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="standard"
+            android:theme="@android:style/Theme.Translucent">
+            <intent-filter>
+                <action android:name="com.baidu.action.Liantian.VIEW" />
+
+                <category android:name="com.baidu.category.liantian" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name="com.baidu.liantian.LiantianReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.baidu.action.Liantian.VIEW" />
+
+                <category android:name="com.baidu.category.liantian" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter android:priority="2147483647">
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name="com.baidu.liantian.LiantianProvider"
+            android:authorities="com.baidu.idl.face.demo.liantian.ac.provider"
+            android:exported="false" />
+
+        <!--        <service android:name="com.baidu.idl.face.main.socket.SocketService" />-->
+        <service
+            android:name="com.baidu.liantian.LiantianService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.baidu.action.Liantian.VIEW" />
+
+                <category android:name="com.baidu.category.liantian" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+        <meta-data
+            android:name="seckey_avscan"
+            android:value="vEPQlVtoGnNiw1BerCexRFyNnWyBOUnF" />
+        <meta-data
+            android:name="appkey_avscan"
+            android:value="100034" /> <!-- 安全设备指纹接入 end -->
+
+        <activity android:name="com.example.zjsignin.face.ActivitionActivity"
+            android:exported="false"/>
+        <activity android:name="com.example.zjsignin.face.HomeActivity"
+            android:exported="false"/>
+        <activity
+            android:name="com.example.zjsignin.face.StartActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme_NoTitle"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

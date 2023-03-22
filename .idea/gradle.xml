@@ -12,6 +12,10 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/datalibrary" />
+            <option value="$PROJECT_DIR$/facelibrary" />
+            <option value="$PROJECT_DIR$/gatelibrary" />
+            <option value="$PROJECT_DIR$/registerlibrary" />
           </set>
         </option>
       </GradleProjectSettings>

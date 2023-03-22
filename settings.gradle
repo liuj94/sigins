@@ -38,3 +38,7 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SignIn"
 include ':app'
+include ':facelibrary'
+include ':datalibrary'
+include ':gatelibrary'
+include ':registerlibrary'
