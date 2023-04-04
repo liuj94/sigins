@@ -39,13 +39,24 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
     override fun getViewModel(): Class<BaseViewModel> = BaseViewModel::class.java
     var preFrameList: MutableList<Bitmap> = ArrayList<Bitmap>()
 
-
+    var isSleep = false
     override fun initData() {
         AppManager.getAppManager().addActivity(this)
         scanTool = ScanTool()
         scanTool?.initSerial(this, "/dev/ttyACM0", 115200, this@FaceActivity)
+//        scanTool?.initSerial(this, "/dev/ttyS1", 115200, this@FaceActivity)
         scanTool?.playSound(true)
-
+        binding.lockView.setLayout(this, R.layout.slide_layout, kv.getString("deviceImg", "1")) {
+            Log.d("initData", "进入隐藏")
+            binding.lockView.visibility = View.GONE
+            isSleep = false
+        };
+        binding.lockView.setOnHidden { //进入隐藏
+            Log.d("initData", "进入隐藏")
+            binding.lockView.visibility = View.GONE
+            isSleep = false
+        }
+        binding.lockView.hide()
         binding.test.setOnClickListener { startDetect() }
         Glide.with(this@FaceActivity).load(BaseUrl).into(binding.img)
         binding.name.text = ""
@@ -62,40 +73,52 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                     return false
                 }
 
+                override fun onSleep() {
+                    Log.d("initData", "onSleep")
+                    if(!isSleep){
+                        binding.lockView.visibility = View.VISIBLE
+                        binding.lockView.show()
+                        isSleep = true
+                    }
+
+                }
+
                 override fun onFaceFrame(
                     preFrame: Bitmap?,
                     faces: Array<FaceDetector.Face?>
                 ): Boolean {
-                    //faces是检测出来的人脸参数
-                    //检测到人脸的回调,保存人脸图片到本地
-                    if (isHasInit) {
-                        if (!isSavingPic && !isScanTool) {
+                    if(!isSleep){
+                        //faces是检测出来的人脸参数
+                        //检测到人脸的回调,保存人脸图片到本地
+                        if (isHasInit) {
+                            if (!isSavingPic && !isScanTool) {
 
-                            if (faces.size > 0) {
-                                preFrame?.let {
-                                    preFrameList.add(it)
-                                }
-                                if (preFrameList.size > 5) {
-
-                                    isSavingPic = true
+                                if (faces.size > 0) {
                                     preFrame?.let {
+                                        preFrameList.add(it)
+                                    }
+                                    if (preFrameList.size > 5) {
+
+                                        isSavingPic = true
+                                        preFrame?.let {
 //                        executorService.submit(SavePicRunnable(it))
-                                        executorService.submit {
-                                            saveFacePicToLocal(preFrame)
-                                            preFrameList.clear()
+                                            executorService.submit {
+                                                saveFacePicToLocal(preFrame)
+                                                preFrameList.clear()
+                                            }
                                         }
+
+
                                     }
 
-
                                 }
-
                             }
                         }
                     }
 
 
-                    //这个这帧preFrame处理了就是进行了回收，返回true
-                    //否则返回false，内部进行回收处理
+
+
                     return true
                 }
             }
@@ -114,10 +137,10 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
         timer.schedule(task, 1500)
 
         binding.scan.setOnClickListener {
-            if(issScan){
+            if (issScan) {
                 binding.faceDetectView.visibility = View.VISIBLE
                 binding.faceDetectView.startCameraPreview()
-            }else{
+            } else {
                 binding.faceDetectView.stopCameraPreview()
                 binding.faceDetectView.faceRectView.clearBorder()
                 binding.faceDetectView.visibility = View.GONE
@@ -125,7 +148,8 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
         }
     }
-var issScan = false
+
+    var issScan = false
     private fun showToast(state: String) {
         var toast = Toast(this)
         var view: View = LayoutInflater.from(this).inflate(R.layout.tost_sb, null)
@@ -305,26 +329,27 @@ var issScan = false
     }
 
     override fun onScanCallBack(data: String?) {
-        if(!isScanTool && !isSavingPic){
-            isScanTool = true
-            if (AppManager.getAppManager().activityClassIsLive(FaceActivity::class.java)) {
-                if (data.isNullOrEmpty()){
+        if(!isSleep) {
+            if (!isScanTool && !isSavingPic) {
+                isScanTool = true
+                if (AppManager.getAppManager().activityClassIsLive(FaceActivity::class.java)) {
+                    if (data.isNullOrEmpty()) {
+                        isScanTool = false
+                        return
+                    }
+                    mViewModel.isShowLoading.value = true
+                    try {
+                        var signUpUser = JSON.parseObject(data, SignUpUser::class.java)
+                        getUserData(signUpUser.id)
+                    } catch (e: java.lang.Exception) {
+                        toast("二维码信息错误")
+                        isScanTool = false
+                    }
+                } else {
                     isScanTool = false
-                    return
                 }
-                mViewModel.isShowLoading.value = true
-                try {
-                    var signUpUser = JSON.parseObject(data, SignUpUser::class.java)
-                    getUserData(signUpUser.id)
-                } catch (e: java.lang.Exception) {
-                    toast("二维码信息错误")
-                    isScanTool = false
-                }
-            }else{
-                isScanTool = false
             }
         }
-
 
     }
 

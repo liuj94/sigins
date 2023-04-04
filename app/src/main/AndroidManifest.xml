@@ -109,11 +109,11 @@
             android:name=".SplashActivity"
             android:enabled="true"
             android:exported="true">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".LoginActivity"
@@ -129,73 +129,20 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <!-- 安全设备指纹接入 start -->
-        <activity
-            android:name="com.baidu.liantian.LiantianActivity"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:launchMode="standard"
-            android:theme="@android:style/Theme.Translucent">
-            <intent-filter>
-                <action android:name="com.baidu.action.Liantian.VIEW" />
 
-                <category android:name="com.baidu.category.liantian" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
 
-        <receiver
-            android:name="com.baidu.liantian.LiantianReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.baidu.action.Liantian.VIEW" />
 
-                <category android:name="com.baidu.category.liantian" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter android:priority="2147483647">
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
 
-        <provider
-            android:name="com.baidu.liantian.LiantianProvider"
-            android:authorities="com.baidu.idl.face.demo.liantian.ac.provider"
-            android:exported="false" />
 
         <!--        <service android:name="com.baidu.idl.face.main.socket.SocketService" />-->
-        <service
-            android:name="com.baidu.liantian.LiantianService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.baidu.action.Liantian.VIEW" />
 
-                <category android:name="com.baidu.category.liantian" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </service>
+<!--        <meta-data-->
+<!--            android:name="seckey_avscan"-->
+<!--            android:value="vEPQlVtoGnNiw1BerCexRFyNnWyBOUnF" />-->
+<!--        <meta-data-->
+<!--            android:name="appkey_avscan"-->
+<!--            android:value="100034" /> &lt;!&ndash; 安全设备指纹接入 end &ndash;&gt;-->
 
-        <meta-data
-            android:name="seckey_avscan"
-            android:value="vEPQlVtoGnNiw1BerCexRFyNnWyBOUnF" />
-        <meta-data
-            android:name="appkey_avscan"
-            android:value="100034" /> <!-- 安全设备指纹接入 end -->
-
-        <activity android:name="com.example.zjsignin.face.ActivitionActivity"
-            android:exported="false"/>
-        <activity android:name="com.example.zjsignin.face.HomeActivity"
-            android:exported="false"/>
-        <activity
-            android:name="com.example.zjsignin.face.StartActivity"
-            android:launchMode="singleTop"
-            android:theme="@style/Theme_NoTitle"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

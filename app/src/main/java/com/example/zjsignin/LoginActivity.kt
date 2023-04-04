@@ -48,6 +48,7 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>()  {
                         super.onMySuccess(data)
 //                        kv.putString("ZjData",data.toString())
                         kv.putString("codeNo", data.codeNo)
+                        kv.putString("deviceImg", data.deviceImg)
                         kv.putString("shockStatus", data.speechStatus)
                         kv.putString("meetingId", data.meetingId)
                         activity?.let {

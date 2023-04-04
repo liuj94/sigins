@@ -72,6 +72,7 @@ public class ZjData implements Serializable {
      */
 
     private String searchValue;
+    private String deviceImg;
     private String createBy;
     private String createTime;
     private String updateBy;
@@ -134,6 +135,14 @@ public class ZjData implements Serializable {
     private String userMeetingFormFiledDTOList;
     private String validConditionStringDTO;
     private String codeNo = "";
+
+    public String getDeviceImg() {
+        return deviceImg;
+    }
+
+    public void setDeviceImg(String deviceImg) {
+        this.deviceImg = deviceImg;
+    }
 
     public String getSearchValue() {
         return searchValue;
