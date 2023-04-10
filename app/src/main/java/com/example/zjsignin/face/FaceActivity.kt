@@ -76,9 +76,12 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                 override fun onSleep() {
                     Log.d("initData", "onSleep")
                     if(!isSleep){
-                        binding.lockView.visibility = View.VISIBLE
-                        binding.lockView.show()
-                        isSleep = true
+                        if(!issScan){
+                            binding.lockView.visibility = View.VISIBLE
+                            binding.lockView.show()
+                            isSleep = true
+                        }
+
                     }
 
                 }
@@ -138,9 +141,13 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
         binding.scan.setOnClickListener {
             if (issScan) {
+                issScan = false
+                binding.scan.setText("切换纯扫码")
                 binding.faceDetectView.visibility = View.VISIBLE
                 binding.faceDetectView.startCameraPreview()
             } else {
+                issScan = true
+                binding.scan.setText("切换人脸模式")
                 binding.faceDetectView.stopCameraPreview()
                 binding.faceDetectView.faceRectView.clearBorder()
                 binding.faceDetectView.visibility = View.GONE
