@@ -15,6 +15,7 @@ import android.widget.Scroller;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.zjsignin.PageRoutes;
 import com.example.zjsignin.R;
 
 /**
@@ -207,7 +208,17 @@ public class PagerLayout extends LinearLayout {
         // 填充视图
         mContainer = LayoutInflater.from(context).inflate(layoutId, this, false);
         ImageView imageView = mContainer.findViewById(R.id.bg);
-        Glide.with(context).load(img).into(imageView);
+        if(img.startsWith("http")){
+            Glide.with(context).load(img).into(imageView);
+        }else {
+            if(img.startsWith("/")){
+                Glide.with(context).load(PageRoutes.Companion.getBaseUrl() +img).into(imageView);
+            }else {
+                Glide.with(context).load(PageRoutes.Companion.getBaseUrl()+"/" +img).into(imageView);
+            }
+
+        }
+
         // 添加视图
         this.addView(mContainer);
         // 初始化Scroller
