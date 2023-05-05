@@ -7,6 +7,7 @@ import com.dylanc.longan.toast
 import com.example.zjsignin.base.BaseBindingActivity
 import com.example.zjsignin.base.BaseViewModel
 import com.example.zjsignin.base.StatusBarUtil
+import com.example.zjsignin.bean.CustomUpdateParser
 import com.example.zjsignin.bean.ZjData
 import com.example.zjsignin.databinding.ActLoginBinding
 import com.example.zjsignin.face.FaceActivity
@@ -16,6 +17,7 @@ import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.model.Response
+import com.xuexiang.xupdate.XUpdate
 
 
 class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>()  {
@@ -27,7 +29,16 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>()  {
     }
 
     override fun getViewModel(): Class<BaseViewModel> = BaseViewModel::class.java
-
+    override fun onResume() {
+        super.onResume()
+        XUpdate.newBuild(this)
+            .updateUrl(PageRoutes.Api_appVersion)
+//            .promptThemeColor(ResUtils.getColor(R.color.text4c93fd))
+//            .promptButtonTextColor(Color.WHITE)
+//            .promptTopResId(R.mipmap.bg_update_top)
+            .updateParser( CustomUpdateParser(this))
+            .update();
+    }
     override fun initData() {
 
 

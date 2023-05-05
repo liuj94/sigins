@@ -19,6 +19,7 @@ import com.example.zjsignin.PageRoutes.Companion.BaseUrl
 import com.example.zjsignin.R
 import com.example.zjsignin.base.BaseBindingActivity
 import com.example.zjsignin.base.BaseViewModel
+import com.example.zjsignin.bean.CustomUpdateParser
 import com.example.zjsignin.bean.MeetingUserDeData
 import com.example.zjsignin.bean.SignUpUser
 import com.example.zjsignin.databinding.ActivityFaceBinding
@@ -26,6 +27,7 @@ import com.example.zjsignin.net.RequestCallback
 import com.hello.scan.ScanCallBack
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.model.Response
+import com.xuexiang.xupdate.XUpdate
 import search
 import sigin
 import upFile
@@ -501,4 +503,11 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 //            //file.delete(); // 如果不保留文件夹本身 则执行此行代码
 //        }
 //    }
+    override fun onResume() {
+        super.onResume()
+    XUpdate.newBuild(this)
+        .updateUrl(PageRoutes.Api_appVersion)
+        .updateParser( CustomUpdateParser(this))
+        .update();
+    }
 }
