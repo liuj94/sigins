@@ -77,8 +77,8 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
                 override fun onSleep() {
                     Log.d("initData", "onSleep")
-                    if(!isSleep){
-                        if(!issScan){
+                    if (!isSleep) {
+                        if (!issScan) {
                             binding.lockView.visibility = View.VISIBLE
                             binding.lockView.show()
                             isSleep = true
@@ -92,7 +92,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                     preFrame: Bitmap?,
                     faces: Array<FaceDetector.Face?>
                 ): Boolean {
-                    if(!isSleep){
+                    if (!isSleep) {
                         //faces是检测出来的人脸参数
                         //检测到人脸的回调,保存人脸图片到本地
                         if (isHasInit) {
@@ -338,22 +338,21 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
     }
 
     override fun onScanCallBack(data: String?) {
-        if(!isSleep) {
+        if (!isSleep) {
             if (!isScanTool && !isSavingPic) {
                 isScanTool = true
                 if (AppManager.getAppManager().activityClassIsLive(FaceActivity::class.java)) {
                     if (data.isNullOrEmpty()) {
                         isScanTool = false
+                        binding.name.text = ""
+                        binding.phone.text = ""
+                        setFinishData("0", "签到失败")
                         return
                     }
                     mViewModel.isShowLoading.value = true
-                    try {
-                        var signUpUser = JSON.parseObject(data, SignUpUser::class.java)
-                        getUserData(signUpUser.id)
-                    } catch (e: java.lang.Exception) {
-                        toast("二维码信息错误")
-                        isScanTool = false
-                    }
+
+                    getmeetingCode(data)
+
                 } else {
                     isScanTool = false
                 }
@@ -362,6 +361,65 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
     }
 
+    private fun getmeetingCode(meetingCode: String) {
+        mViewModel.isShowLoading.value = true
+        OkGo.get<SignUpUser>(PageRoutes.Api_meetingCode + meetingCode)
+            .tag(PageRoutes.Api_meetingCode + meetingCode)
+            .headers("Authorization", kv.getString("token", ""))
+            .execute(object : RequestCallback<SignUpUser>() {
+                override fun onSuccessNullData() {
+                    super.onSuccessNullData()
+
+                }
+
+                override fun onMySuccess(data: SignUpUser) {
+                    super.onMySuccess(data)
+                    try {
+                        var signUpUser = data
+
+                        if (!signUpUser.meetingId.equals(kv.getString("meetingId", "0"))) {
+                            binding.name.text = ""
+                            binding.phone.text = ""
+                            setFinishData("0", "签到失败")
+                            return
+                        }
+
+
+                        if (signUpUser.id.isNullOrEmpty()) {
+                            binding.name.text = ""
+                            binding.phone.text = ""
+                            setFinishData("0", "签到失败")
+                            return
+                        }
+                        getUserData(signUpUser.id)
+
+                    } catch (e: Exception) {
+                        binding.name.text = ""
+                        binding.phone.text = ""
+                        setFinishData("0", "签到失败")
+                        isScanTool = false
+
+                    }
+
+
+                }
+
+                override fun onError(response: Response<SignUpUser>) {
+                    super.onError(response)
+                    mViewModel.isShowLoading.value = false
+                    binding.name.text = ""
+                    binding.phone.text = ""
+                    setFinishData("0", "签到失败")
+                }
+
+                override fun onFinish() {
+                    super.onFinish()
+
+                }
+
+
+            })
+    }
 
     fun setFinishData(state: String, msg: String? = "签到失败") {
         if (mRingPlayer != null) {
@@ -425,7 +483,13 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                         } else if (msg.contains("无权限")) {
                             mRingPlayer = MediaPlayer.create(this, R.raw.wdqx);
                             mRingPlayer?.start();
+                        } else {
+                            mRingPlayer = MediaPlayer.create(this, R.raw.qdsb);
+                            mRingPlayer?.start();
                         }
+                    } else {
+                        mRingPlayer = MediaPlayer.create(this, R.raw.qdsb);
+                        mRingPlayer?.start();
                     }
 
 
@@ -486,7 +550,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
             })
     }
 
-//      fun deleteFile( filePath:String)
+    //      fun deleteFile( filePath:String)
 //    {
 //        var file =  File(this.externalCacheDir.toString() + File.separator);
 //        if (file.isFile())  //判断是否为文件，是，则删除
@@ -505,9 +569,9 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 //    }
     override fun onResume() {
         super.onResume()
-    XUpdate.newBuild(this)
-        .updateUrl(PageRoutes.Api_appVersion)
-        .updateParser( CustomUpdateParser(this))
-        .update();
+        XUpdate.newBuild(this)
+            .updateUrl(PageRoutes.Api_appVersion)
+            .updateParser(CustomUpdateParser(this))
+            .update();
     }
 }

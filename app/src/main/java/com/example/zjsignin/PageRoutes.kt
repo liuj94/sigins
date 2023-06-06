@@ -67,8 +67,10 @@ interface PageRoutes {
 //        val Api_sigin = "$BaseUrlApi/exe/meeting/user"
         val Api_sigin = "$BaseUrlApi/manager/meeting/user"
         val Api_zhajisigin = "$BaseUrlApi/zhaji/sign/up"
+        val Api_meetingCode = "$BaseUrlApi/zhaji/user/meeting/info/meetingCode?meetingCode="
 
-//        val Api_sigin = "$BaseUrlApi/manager/meeting/order/{id}"
+
+        //        val Api_sigin = "$BaseUrlApi/manager/meeting/order/{id}"
         val Api_order = "$BaseUrlApi/manager/meeting/order/"
 
 
