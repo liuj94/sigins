@@ -98,6 +98,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                     if(isFrist){
                         binding.lockView.hide()
                         binding.lockView.visibility = View.GONE
+                        isFrist = false
                         isSleep = false
                     }else{
                         if (!isSleep) {
@@ -302,7 +303,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
             }, {
 //                setFinishData("-5000", it)
-                toast("请出示二维码")
+                toast("人脸搜索失败请出示二维码")
                 isSavingPic = false
                 mViewModel.isShowLoading.value = false
             }, {
@@ -359,7 +360,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
     }
 
     override fun onScanCallBack(data: String?) {
-        if (!isSleep) {
+//        if (!isSleep) {
             if (!isScanTool && !isSavingPic) {
                 isScanTool = true
                 if (AppManager.getAppManager().activityClassIsLive(FaceActivity::class.java)) {
@@ -378,7 +379,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                     isScanTool = false
                 }
             }
-        }
+//        }
 
     }
 
@@ -443,6 +444,9 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
     }
 
     fun setFinishData(state: String, msg: String? = "签到失败") {
+        if (isSleep) {
+            ToastUtils.toast(this,msg)
+        }
         if (mRingPlayer != null) {
             mRingPlayer?.stop();
             mRingPlayer?.release();
