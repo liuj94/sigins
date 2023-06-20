@@ -20,6 +20,7 @@ import androidx.viewbinding.ViewBinding
 import com.dylanc.mmkv.MMKVOwner
 import com.dylanc.viewbinding.base.ActivityBinding
 import com.dylanc.viewbinding.base.ActivityBindingDelegate
+import com.example.zjsignin.AppManager
 import com.tencent.mmkv.MMKV
 
 abstract class BaseActivity<VB : ViewBinding,VM : BaseViewModel> : AppCompatActivity(),
@@ -39,7 +40,8 @@ abstract class BaseActivity<VB : ViewBinding,VM : BaseViewModel> : AppCompatActi
         setContentViewWithBinding()
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         mViewModel.mContext = this
-
+        getWindow().setSoftInputMode( WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        AppManager.getAppManager().addActivity(this)
         initProgressDialog()
         initIntentStringExtra()
         initTitle()
@@ -47,7 +49,10 @@ abstract class BaseActivity<VB : ViewBinding,VM : BaseViewModel> : AppCompatActi
         initListener()
         initRootTitleBar()
     }
-
+    override fun onDestroy() {
+        AppManager.getAppManager().removeActivity(this)
+        super.onDestroy()
+    }
 
     abstract fun initData()
     open fun initListener() {}

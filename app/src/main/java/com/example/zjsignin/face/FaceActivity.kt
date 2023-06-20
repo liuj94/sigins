@@ -41,13 +41,15 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
     override fun getViewModel(): Class<BaseViewModel> = BaseViewModel::class.java
     var preFrameList: MutableList<Bitmap> = ArrayList<Bitmap>()
 
-    var isSleep = false
+    var isSleep = true
+    var isFrist = true
+    var ischunScan = false
     override fun initData() {
         AppManager.getAppManager().addActivity(this)
         scanTool = ScanTool()
         scanTool?.initSerial(this, "/dev/ttyACM0", 115200, this@FaceActivity)
-//        scanTool?.initSerial(this, "/dev/ttyS1", 115200, this@FaceActivity)
         scanTool?.playSound(true)
+        ischunScan = kv.getBoolean("ischunScan", false)
         binding.lockView.setLayout(this, R.layout.slide_layout, kv.getString("deviceImg", "1")) {
             Log.d("initData", "进入隐藏")
             binding.lockView.visibility = View.GONE
@@ -58,7 +60,8 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
             binding.lockView.visibility = View.GONE
             isSleep = false
         }
-        binding.lockView.hide()
+        binding.lockView.visibility = View.VISIBLE
+        binding.lockView.show()
         binding.test.setOnClickListener { startDetect() }
         Glide.with(this@FaceActivity).load(BaseUrl).into(binding.img)
         binding.name.text = ""
@@ -76,7 +79,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                 }
 
                 override fun onSleep() {
-                    Log.d("initData", "onSleep")
+
                     if (!isSleep) {
                         if (!issScan) {
                             binding.lockView.visibility = View.VISIBLE
@@ -92,30 +95,35 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                     preFrame: Bitmap?,
                     faces: Array<FaceDetector.Face?>
                 ): Boolean {
-                    if (!isSleep) {
-                        //faces是检测出来的人脸参数
-                        //检测到人脸的回调,保存人脸图片到本地
-                        if (isHasInit) {
-                            if (!isSavingPic && !isScanTool) {
+                    if(isFrist){
+                        binding.lockView.hide()
+                        binding.lockView.visibility = View.GONE
+                        isSleep = false
+                    }else{
+                        if (!isSleep) {
+                            //faces是检测出来的人脸参数
+                            //检测到人脸的回调,保存人脸图片到本地
+                            if (isHasInit) {
+                                if (!isSavingPic && !isScanTool) {
 
-                                if (faces.size > 0) {
-                                    preFrame?.let {
-                                        preFrameList.add(it)
-                                    }
-                                    if (preFrameList.size > 5) {
-
-                                        isSavingPic = true
+                                    if (faces.size > 0) {
                                         preFrame?.let {
-//                        executorService.submit(SavePicRunnable(it))
-                                            executorService.submit {
-                                                saveFacePicToLocal(preFrame)
-                                                preFrameList.clear()
+                                            preFrameList.add(it)
+                                        }
+                                        if (preFrameList.size > 2) {
+
+                                            isSavingPic = true
+                                            preFrame?.let {
+                                                executorService.submit {
+                                                    saveFacePicToLocal(preFrame)
+                                                    preFrameList.clear()
+                                                }
                                             }
+
+
                                         }
 
-
                                     }
-
                                 }
                             }
                         }
@@ -124,22 +132,32 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
 
 
+
                     return true
                 }
             }
         mViewModel.isShowLoading.value = true
-        val task: TimerTask = object : TimerTask() {
-            override fun run() {
-                mainThread {
-                    binding.test.performClick()
-                    mViewModel.isShowLoading.value = false
+        if(!ischunScan){
+            val task: TimerTask = object : TimerTask() {
+                override fun run() {
+                    mainThread {
+
+                        binding.test.performClick()
+                        mViewModel.isShowLoading.value = false
+
+
+                    }
+
                 }
-
             }
-        }
 
-        val timer = Timer()
-        timer.schedule(task, 1500)
+            val timer = Timer()
+            timer.schedule(task, 1500)
+        }else{
+            binding.faceDetectView.visibility = View.GONE
+            binding.scan.visibility = View.GONE
+            issScan = true
+        }
 
         binding.scan.setOnClickListener {
             if (issScan) {
@@ -156,6 +174,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
             }
 
         }
+
     }
 
     var issScan = false
@@ -189,7 +208,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
             binding.faceDetectView.initCamera()
             binding.faceDetectView.detectConfig.CameraType = Camera.CameraInfo.CAMERA_FACING_FRONT
             binding.faceDetectView.detectConfig.EnableFaceDetect = true
-            binding.faceDetectView.detectConfig.MinDetectTime = 1000
+            binding.faceDetectView.detectConfig.MinDetectTime = 500
             binding.faceDetectView.detectConfig.Simple = 0.2f //图片检测时的压缩取样率，0~1，越小检测越流畅
             binding.faceDetectView.detectConfig.MaxDetectTime = 2000 //进入智能休眠检测，以2秒一次的这个速度检测
             binding.faceDetectView.detectConfig.EnableIdleSleepOption = true //启用智能休眠检测机制
@@ -252,7 +271,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
         } catch (e: Exception) {
             isSavingPic = false
-            Log.e("FaceActivity", "Exception," + e.toString())
+
         }
 
 
@@ -282,9 +301,10 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                 }
 
             }, {
-                setFinishData("-5000", it)
-
-
+//                setFinishData("-5000", it)
+                toast("请出示二维码")
+                isSavingPic = false
+                mViewModel.isShowLoading.value = false
             }, {
                 mViewModel.isShowLoading.value = false
             })
@@ -310,7 +330,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
     }
 
     var mRingPlayer: MediaPlayer? = null
-    var test = false
+
     private fun sigin(userMeetingId: String) {
 
         var params = HashMap<String, String>()
@@ -330,7 +350,8 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
     override fun onDestroy() {
         AppManager.getAppManager().removeActivity(this)
-        endDetect()
+        if(!ischunScan){
+        endDetect()}
         scanTool?.pauseReceiveData()
         scanTool?.release()
         super.onDestroy()
@@ -550,23 +571,6 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
             })
     }
 
-    //      fun deleteFile( filePath:String)
-//    {
-//        var file =  File(this.externalCacheDir.toString() + File.separator);
-//        if (file.isFile())  //判断是否为文件，是，则删除
-//        {
-//            file.delete();
-//        }
-//        else //不为文件，则为文件夹
-//        {
-//            var childFilePath = file.list();//获取文件夹下所有文件相对路径
-//            for ( path in childFilePath)
-//            {
-//                deleteFile(file.getAbsoluteFile()+"/"+path);//递归，对每个都进行判断
-//            }
-//            //file.delete(); // 如果不保留文件夹本身 则执行此行代码
-//        }
-//    }
     override fun onResume() {
         super.onResume()
         XUpdate.newBuild(this)

@@ -62,6 +62,12 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>()  {
                         kv.putString("deviceImg", data.deviceImg)
                         kv.putString("shockStatus", data.speechStatus)
                         kv.putString("meetingId", data.meetingId)
+                        //faceDetect 开启人脸 1开启2关闭
+                        if(data.faceDetect==1){
+                            kv.putBoolean("ischunScan",true)
+                        }else{
+                            kv.putBoolean("ischunScan",false)
+                        }
                         activity?.let {
                             XXPermissions.with(activity)
                                 .permission(Permission.CAMERA)

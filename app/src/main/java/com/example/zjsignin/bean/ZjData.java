@@ -105,11 +105,13 @@ public class ZjData implements Serializable {
     private String leveStatus;
     private String meetingId;
     private int loginTimeStatus;
+    private int faceDetect = 1;
     private int insertUserInfoStatus;
     private int bingStatus;
     private int showUserStatus;
     private int signUpNumStatus;
     private int signUpNum;
+
     private String useAllStatus;
     private String totalUserCount;
     private String currentUserCount;
@@ -392,6 +394,13 @@ public class ZjData implements Serializable {
         this.meetingId = meetingId;
     }
 
+    public int getFaceDetect() {
+        return faceDetect;
+    }
+
+    public void setFaceDetect(int faceDetect) {
+        this.faceDetect = faceDetect;
+    }
     public int getLoginTimeStatus() {
         return loginTimeStatus;
     }
