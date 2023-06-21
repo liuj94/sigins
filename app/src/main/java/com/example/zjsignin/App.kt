@@ -9,7 +9,6 @@ import com.dylanc.longan.toast
 import com.tencent.bugly.crashreport.CrashReport
 import com.xuexiang.xupdate.XUpdate
 import com.xuexiang.xupdate.entity.UpdateError.ERROR.CHECK_NO_NEW_VERSION
-import com.xuexiang.xupdate.utils.UpdateUtils
 
 
 class App :  Application() {
@@ -42,7 +41,6 @@ class App :  Application() {
             .isGet(true) //默认设置使用get请求检查版本
             .isAutoMode(false) //默认设置非自动模式，可根据具体使用配置
             .setOnUpdateFailureListener { error ->
-
                 //设置版本更新出错的监听
                 if (error.code != CHECK_NO_NEW_VERSION) {          //对不同错误进行处理
                    toast(error.toString())

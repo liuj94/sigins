@@ -1,8 +1,12 @@
 package com.example.zjsignin.bean;
 
+import static androidx.core.content.FileProvider.getUriForFile;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -11,9 +15,7 @@ import com.xuexiang.xupdate.entity.PromptEntity;
 import com.xuexiang.xupdate.entity.UpdateEntity;
 import com.xuexiang.xupdate.proxy.IUpdatePrompter;
 import com.xuexiang.xupdate.proxy.IUpdateProxy;
-import com.xuexiang.xupdate.service.OnFileDownloadListener;
 import com.xuexiang.xupdate.utils.UpdateUtils;
-import com.xuexiang.xutil.display.HProgressDialogUtils;
 
 import java.io.File;
 
@@ -44,38 +46,63 @@ public class CustomUpdatePrompter implements IUpdatePrompter {
                 .setPositiveButton("升级", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        updateProxy.startDownload(updateEntity, new OnFileDownloadListener() {
-                            @Override
-                            public void onStart() {
-                                HProgressDialogUtils.showHorizontalProgressDialog(mContext, "下载进度", false);
-                            }
-
-                            @Override
-                            public void onProgress(float progress, long total) {
-                                HProgressDialogUtils.setProgress(Math.round(progress * 100));
-                            }
-
-                            @Override
-                            public boolean onCompleted(File file) {
-                                dialog.dismiss();
-                                HProgressDialogUtils.cancel();
-                                Intent installIntent = new Intent("android.intent.action.application");
-                                // 需要静默安装的apk路径（必须传入的参数）
-                                installIntent.putExtra("quiet_install", file.getPath());
-                                // 如果静默安装完成需要自启动应用，则传入应用的包名（非必须传入的参数）
-                                installIntent.putExtra("packName", "com.example.zjsignin");
-                                // 如果静默安装完成需要自动删除安装包，则传入参数true；传入参数false则不删除安装包（非必须传入的参数）
-                                installIntent.putExtra("deletePack", false);
-                                mContext.sendBroadcast(installIntent);
-                                return true;
-                            }
-
-                            @Override
-                            public void onError(Throwable throwable) {
-                                HProgressDialogUtils.cancel();
-                            }
-                        });
-
+//                        updateProxy.startDownload(updateEntity, new OnFileDownloadListener() {
+//                            @Override
+//                            public void onStart() {
+//                                HProgressDialogUtils.showHorizontalProgressDialog(mContext, "下载进度", false);
+//                            }
+//
+//                            @Override
+//                            public void onProgress(float progress, long total) {
+//                                HProgressDialogUtils.setProgress(Math.round(progress * 100));
+//                            }
+//
+//                            @Override
+//                            public boolean onCompleted(File file) {
+//                                dialog.dismiss();
+//                                HProgressDialogUtils.cancel();
+//                                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+//                                builder.setTitle("安装方式")
+//                                        .setMessage(updateInfo)
+//                                        .setPositiveButton("方式一", new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface dialog, int which) {
+//                                                Uri fileUri = null;
+//                                                Intent intent = new Intent(Intent.ACTION_VIEW);
+//                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                                fileUri = Uri.fromFile(file);
+//                                                intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
+//                                                mContext.startActivity(intent);
+//
+//                                            }
+//                                        })
+//                                        .setNegativeButton("方式二", new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface dialog, int which) {
+//                                                Uri fileUri = null;
+//                                                Intent intent = new Intent(Intent.ACTION_VIEW);
+//                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);//7.0私有目录访问限制适配
+//                                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                                                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+//                                                fileUri = getUriForFile(mContext, "com.example.zjsignin.fileProvider", file);
+//                                                intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
+//                                                mContext.startActivity(intent);
+//
+//                                            }
+//                                        })
+//                                        .setCancelable(false)
+//                                        .create()
+//                                        .show();
+////                                installApk(file,mContext);
+//                                return true;
+//                            }
+//
+//                            @Override
+//                            public void onError(Throwable throwable) {
+//                                HProgressDialogUtils.cancel();
+//                            }
+//                        });
+//                        CheckUpdateUtils.getInstance().downloadUpdateFile
                     }
                 })
                 .setNegativeButton("暂不升级", null)
@@ -83,5 +110,23 @@ public class CustomUpdatePrompter implements IUpdatePrompter {
                 .create()
                 .show();
     }
+
+    //安装应用
+    private void installApk(File apk, Context context) {
+
+        Uri fileUri = null;
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);//7.0私有目录访问限制适配
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            fileUri = getUriForFile(context, "com.example.zjsignin.fileProvider", apk);
+        } else {
+            fileUri = Uri.fromFile(apk);
+        }
+        intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
+        context.startActivity(intent);
+    }
+
 }
 

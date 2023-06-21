@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -20,20 +21,21 @@ import com.dylanc.longan.toast
 import com.example.zjsignin.base.BaseBindingActivity
 import com.example.zjsignin.base.BaseViewModel
 import com.example.zjsignin.base.StatusBarUtil
-import com.example.zjsignin.bean.CustomUpdateParser
-import com.example.zjsignin.bean.CustomUpdatePrompter
+import com.example.zjsignin.bean.CustomResult
 import com.example.zjsignin.bean.ZjData
 import com.example.zjsignin.databinding.ActLoginBinding
 import com.example.zjsignin.face.FaceActivity
 import com.example.zjsignin.face.ToastUtils
 import com.example.zjsignin.net.RequestCallback
+import com.example.zjsignin.update.CheckUpdateUtils
+import com.example.zjsignin.update.UpdateAppContract
 import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
 import com.lzy.okgo.OkGo
+import com.lzy.okgo.model.Progress
 import com.lzy.okgo.model.Response
-import com.xuexiang.xupdate.XUpdate
-import com.xuexiang.xutil.app.PathUtils
+import java.io.File
 
 
 class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
@@ -47,42 +49,93 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
     override fun getViewModel(): Class<BaseViewModel> = BaseViewModel::class.java
     override fun onResume() {
         super.onResume()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val hasInstallPermission: Boolean =
-                this.getPackageManager().canRequestPackageInstalls()
-            if (!hasInstallPermission) {
-                AlertDialog.Builder(this)
-                    .setTitle("提示")
-                    .setMessage("暂无安装未知来源权限")
-                    .setPositiveButton("去开启", DialogInterface.OnClickListener { dialog, which ->
-                        startInstallPermissionSettingActivity(this)
+        CheckUpdateUtils.getInstance().checkUpdate(activity, object : UpdateAppContract.OnCheckCallback {
+            override fun isLatest() {
+
+
+            }
+
+            override fun hasUpdate(info: CustomResult) {
+                val builder = AlertDialog.Builder(this@LoginActivity)
+                builder.setTitle(String.format("是否升级到%s版本？", info.getVersionName()))
+                    .setMessage("")
+                    .setPositiveButton("升级", DialogInterface.OnClickListener { dialog, which ->
+                        downloadAPK(info,this@LoginActivity)
                     })
-                    .setNegativeButton("取消",  DialogInterface.OnClickListener { dialog, which ->
-                        toast("暂无安装未知来源权限，无法更新版本")
-                    })
+                    .setNegativeButton("暂不升级", null)
                     .setCancelable(false)
                     .create()
                     .show()
 
-
-
-            }else{
-                XUpdate.newBuild(this)
-                    .apkCacheDir(PathUtils.getAppExtCachePath()) //设置下载缓存的根目录
-                    .updateUrl(PageRoutes.Api_appVersion)
-                    .updateParser(CustomUpdateParser(this))
-                    .updatePrompter( CustomUpdatePrompter(this))
-                    .update();
             }
-        }else{
-            XUpdate.newBuild(this)
-                .apkCacheDir(PathUtils.getAppExtCachePath()) //设置下载缓存的根目录
-                .updateUrl(PageRoutes.Api_appVersion)
-                .updateParser(CustomUpdateParser(this))
-                .updatePrompter( CustomUpdatePrompter(this))
-                .update();
-        }
 
+            override fun onFail() {
+
+            }
+
+            override fun onFinish() {
+
+            }
+        })
+
+    }
+
+    fun downloadAPK(info: CustomResult, context: Activity) {
+
+        val progressDialog = android.app.ProgressDialog(context)
+        progressDialog.setProgressStyle(android.app.ProgressDialog.STYLE_HORIZONTAL)
+        progressDialog.setTitle("正在下载")
+        progressDialog.setMessage("请稍后...")
+        progressDialog.progress = 0
+        progressDialog.max = 100
+        progressDialog.show()
+        progressDialog.setCancelable(false)
+
+        CheckUpdateUtils.getInstance()
+            .downloadUpdateFile(context, "https://meeting.nbqichen.com"+info.url,
+                "xbbzj" + ".apk", object : UpdateAppContract.OnDownloadCallback {
+                    override fun onDownLoadStart() {
+                        if (!progressDialog.isShowing)
+                            progressDialog.show()
+                    }
+
+                    override fun onProgress(progress: Progress) {
+                        if (progressDialog.isShowing)
+                            progressDialog.progress =
+                                (progress.currentSize * 100 / progress.totalSize).toInt()
+                    }
+
+                    override fun onFail(msg: String) {
+                        toast(msg)
+                        Log.d("onFailonFail",msg)
+                        if (progressDialog.isShowing)
+                            progressDialog.dismiss()
+                    }
+
+                    override fun onSuccess(path: File) {
+                        if (progressDialog.isShowing)
+                            progressDialog.dismiss()
+                        AlertDialog.Builder(this@LoginActivity)
+                            .setTitle("更新提示")
+                            .setMessage("下载完成，是否前往安装?")
+                            .setPositiveButton(
+                                "是",
+                                DialogInterface.OnClickListener { dialog, which ->
+                                    CheckUpdateUtils.getInstance().installApk(context, path)
+                                    dialog.dismiss()
+                                })
+                            .setNegativeButton(
+                                "否",
+                                DialogInterface.OnClickListener { dialog, which ->
+                                    toast("安装取消")
+                                })
+                            .setCancelable(false)
+                            .create()
+                            .show()
+
+
+                    }
+                })
     }
 
     /**
@@ -113,9 +166,10 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
         )
 
     }
+
     override fun initData() {
-       var nodeNoLogin = kv.getString("nodeNoLogin","")
-        if(!nodeNoLogin.isNullOrEmpty()){
+        var nodeNoLogin = kv.getString("nodeNoLogin", "")
+        if (!nodeNoLogin.isNullOrEmpty()) {
             binding.userName.setText(nodeNoLogin)
         }
 
@@ -128,11 +182,16 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
                     noVerticalPadding = true    //让自定义高度生效
                 ).apply {
                     findViewById<TextView>(R.id.add).setOnClickListener {
-                        Log.d("password",findViewById<EditText>(R.id.password).text.toString().trim())
-                        if(findViewById<EditText>(R.id.password).text.toString().trim().equals("123456")){
+                        Log.d(
+                            "password",
+                            findViewById<EditText>(R.id.password).text.toString().trim()
+                        )
+                        if (findViewById<EditText>(R.id.password).text.toString().trim()
+                                .equals("123456")
+                        ) {
                             finish()
-                        } else{
-                            ToastUtils.toast(this@LoginActivity,"密码错误")
+                        } else {
+                            ToastUtils.toast(this@LoginActivity, "密码错误")
                         }
                     }
                     findViewById<TextView>(R.id.qx).setOnClickListener {
@@ -158,7 +217,7 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
 
                     override fun onMySuccess(data: ZjData) {
                         super.onMySuccess(data)
-                        kv.putString("nodeNoLogin",binding.userName.text.toString().trim())
+                        kv.putString("nodeNoLogin", binding.userName.text.toString().trim())
                         kv.putString("codeNo", data.codeNo)
                         kv.putString("deviceImg", data.deviceImg)
                         kv.putString("shockStatus", data.speechStatus)
@@ -202,7 +261,6 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
                         }
 
 
-
                     }
 
                     override fun onError(response: Response<ZjData>) {
@@ -234,6 +292,21 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
         }
     }
 
+    /*
+    *  隐藏导航栏
+    * */
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && Build.VERSION.SDK_INT >= 19) {
+            val gameView = this.window.decorView
+            gameView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+        }
+    }
 }
 
 
