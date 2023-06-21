@@ -1,7 +1,6 @@
 package com.example.zjsignin.base
 
 import android.app.Activity
-import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Bundle
@@ -45,10 +44,7 @@ abstract class BaseActivity<VB : ViewBinding,VM : BaseViewModel> : AppCompatActi
         initData()
         initListener()
         initRootTitleBar()
-        val hideNavIntent = Intent()
-        hideNavIntent.action = "android.intent.action.systemui"
-        hideNavIntent.putExtra("navigation_bar", "dismiss")
-        sendBroadcast(hideNavIntent)
+
     }
     override fun onDestroy() {
         AppManager.getAppManager().removeActivity(this)

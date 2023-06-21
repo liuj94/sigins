@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -224,7 +223,7 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
                         kv.putString("meetingId", data.meetingId)
                         //faceDetect 开启人脸 1开启2关闭
                         if (data.faceDetect == 1) {
-                            kv.putBoolean("ischunScan", true)
+                            kv.putBoolean("ischunScan", false)
                             activity?.let {
                                 XXPermissions.with(activity)
                                     .permission(Permission.CAMERA)
@@ -256,7 +255,7 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
 
                             }
                         } else {
-                            kv.putBoolean("ischunScan", false)
+                            kv.putBoolean("ischunScan", true)
                             startActivity<FaceActivity>()
                         }
 
@@ -292,21 +291,21 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
         }
     }
 
-    /*
-    *  隐藏导航栏
-    * */
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && Build.VERSION.SDK_INT >= 19) {
-            val gameView = this.window.decorView
-            gameView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-        }
-    }
+//    /*
+//    *  隐藏导航栏
+//    * */
+//    override fun onWindowFocusChanged(hasFocus: Boolean) {
+//        super.onWindowFocusChanged(hasFocus)
+//        if (hasFocus && Build.VERSION.SDK_INT >= 19) {
+//            val gameView = this.window.decorView
+//            gameView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+//                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+//                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+//        }
+//    }
 }
 
 

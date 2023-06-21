@@ -1,10 +1,10 @@
 package com.example.zjsignin.face
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.hardware.Camera
 import android.media.FaceDetector
 import android.media.MediaPlayer
-import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -44,6 +44,10 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
     var isFrist = true
     var ischunScan = false
     override fun initData() {
+        val hideNavIntent = Intent()
+        hideNavIntent.action = "android.intent.action.systemui"
+        hideNavIntent.putExtra("navigation_bar", "dismiss")
+        sendBroadcast(hideNavIntent)
         AppManager.getAppManager().addActivity(this)
         scanTool = ScanTool()
         scanTool?.initSerial(this, "/dev/ttyACM0", 115200, this@FaceActivity)
@@ -342,7 +346,8 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
         sigin(JSON.toJSONString(params), { success ->
             setFinishData(success)
         }, {
-            setFinishData("0", it)
+//            setFinishData("0", it)
+            setFinishData("0", "签到失败")
         }, {
             isSavingPic = false
             mViewModel.isShowLoading.value = true
@@ -582,16 +587,16 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
     /*
        *  隐藏导航栏
        * */
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && Build.VERSION.SDK_INT >= 19) {
-            val gameView = this.window.decorView
-            gameView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-        }
-    }
+//    override fun onWindowFocusChanged(hasFocus: Boolean) {
+//        super.onWindowFocusChanged(hasFocus)
+//        if (hasFocus && Build.VERSION.SDK_INT >= 19) {
+//            val gameView = this.window.decorView
+//            gameView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+//                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+//                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+//        }
+//    }
 }
