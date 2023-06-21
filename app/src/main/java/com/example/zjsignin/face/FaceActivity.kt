@@ -1,9 +1,15 @@
 package com.example.zjsignin.face
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.hardware.Camera
 import android.media.FaceDetector
 import android.media.MediaPlayer
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +25,6 @@ import com.example.zjsignin.PageRoutes.Companion.BaseUrl
 import com.example.zjsignin.R
 import com.example.zjsignin.base.BaseBindingActivity
 import com.example.zjsignin.base.BaseViewModel
-import com.example.zjsignin.bean.CustomUpdateParser
 import com.example.zjsignin.bean.MeetingUserDeData
 import com.example.zjsignin.bean.SignUpUser
 import com.example.zjsignin.databinding.ActivityFaceBinding
@@ -27,7 +32,6 @@ import com.example.zjsignin.net.RequestCallback
 import com.hello.scan.ScanCallBack
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.model.Response
-import com.xuexiang.xupdate.XUpdate
 import search
 import sigin
 import upFile
@@ -137,8 +141,9 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                     return true
                 }
             }
-        mViewModel.isShowLoading.value = true
+
         if(!ischunScan){
+            mViewModel.isShowLoading.value = true
             val task: TimerTask = object : TimerTask() {
                 override fun run() {
                     mainThread {
@@ -577,9 +582,61 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
 
     override fun onResume() {
         super.onResume()
-        XUpdate.newBuild(this)
-            .updateUrl(PageRoutes.Api_appVersion)
-            .updateParser(CustomUpdateParser(this))
-            .update();
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            val hasInstallPermission: Boolean =
+//                this.getPackageManager().canRequestPackageInstalls()
+//            if (!hasInstallPermission) {
+//                MaterialAlertDialogBuilder(this)
+//                    .setTitle("提示")
+//                    .setMessage("暂无安装未知来源权限")
+//                    .setNegativeButton("取消") { dialog, which ->
+//                        toast("暂无安装未知来源权限，无法更新版本")
+//                    }
+//                    .setPositiveButton("去开启") { dialog: DialogInterface?, which: Int ->
+//                        startInstallPermissionSettingActivity(this)
+//                    }
+//                    .show()
+//
+//
+//            }else{
+//                XUpdate.newBuild(this)
+//                    .updateUrl(PageRoutes.Api_appVersion)
+//                    .updateParser(CustomUpdateParser(this))
+//                    .update();
+//            }
+//        }else{
+//            XUpdate.newBuild(this)
+//                .updateUrl(PageRoutes.Api_appVersion)
+//                .updateParser(CustomUpdateParser(this))
+//                .update();
+//        }
+    }
+    /**
+     * 开启设置安装未知来源应用权限界面
+     *
+     * @param context
+     */
+
+    fun startInstallPermissionSettingActivity(context: Context?) {
+        if (context == null) {
+            return
+        }
+        val intent = Intent()
+        //获取当前apk包URI，并设置到intent中（这一步设置，可让“未知应用权限设置界面”只显示当前应用的设置项）
+        val packageURI = Uri.parse("package:" + context.packageName)
+        intent.data = packageURI
+        //设置不同版本跳转未知应用的动作
+        if (Build.VERSION.SDK_INT >= 26) {
+            //intent = new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,packageURI);
+            intent.action = Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
+        } else {
+            intent.action = Settings.ACTION_SECURITY_SETTINGS
+        }
+        //Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+        (context as Activity).startActivityForResult(
+            intent,
+            10086
+        )
+
     }
 }

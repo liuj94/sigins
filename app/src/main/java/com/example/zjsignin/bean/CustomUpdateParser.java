@@ -37,6 +37,7 @@ public class CustomUpdateParser implements IUpdateParser {
                     return new UpdateEntity()
                             .setHasUpdate(hasUpdate)
                             .setIsIgnorable(false)
+                            .setIsAutoInstall(true)
                             .setVersionCode(versionCode)
                             .setVersionName(result.versionName)
                             .setUpdateContent("")

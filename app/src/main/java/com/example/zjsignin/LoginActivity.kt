@@ -1,9 +1,17 @@
 package com.example.zjsignin
 
+import android.app.Activity
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.widget.EditText
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.dylanc.longan.activity
@@ -13,6 +21,7 @@ import com.example.zjsignin.base.BaseBindingActivity
 import com.example.zjsignin.base.BaseViewModel
 import com.example.zjsignin.base.StatusBarUtil
 import com.example.zjsignin.bean.CustomUpdateParser
+import com.example.zjsignin.bean.CustomUpdatePrompter
 import com.example.zjsignin.bean.ZjData
 import com.example.zjsignin.databinding.ActLoginBinding
 import com.example.zjsignin.face.FaceActivity
@@ -24,6 +33,7 @@ import com.hjq.permissions.XXPermissions
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.model.Response
 import com.xuexiang.xupdate.XUpdate
+import com.xuexiang.xutil.app.PathUtils
 
 
 class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
@@ -37,15 +47,72 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
     override fun getViewModel(): Class<BaseViewModel> = BaseViewModel::class.java
     override fun onResume() {
         super.onResume()
-        XUpdate.newBuild(this)
-            .updateUrl(PageRoutes.Api_appVersion)
-//            .promptThemeColor(ResUtils.getColor(R.color.text4c93fd))
-//            .promptButtonTextColor(Color.WHITE)
-//            .promptTopResId(R.mipmap.bg_update_top)
-            .updateParser(CustomUpdateParser(this))
-            .update();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val hasInstallPermission: Boolean =
+                this.getPackageManager().canRequestPackageInstalls()
+            if (!hasInstallPermission) {
+                AlertDialog.Builder(this)
+                    .setTitle("提示")
+                    .setMessage("暂无安装未知来源权限")
+                    .setPositiveButton("去开启", DialogInterface.OnClickListener { dialog, which ->
+                        startInstallPermissionSettingActivity(this)
+                    })
+                    .setNegativeButton("取消",  DialogInterface.OnClickListener { dialog, which ->
+                        toast("暂无安装未知来源权限，无法更新版本")
+                    })
+                    .setCancelable(false)
+                    .create()
+                    .show()
+
+
+
+            }else{
+                XUpdate.newBuild(this)
+                    .apkCacheDir(PathUtils.getAppExtCachePath()) //设置下载缓存的根目录
+                    .updateUrl(PageRoutes.Api_appVersion)
+                    .updateParser(CustomUpdateParser(this))
+                    .updatePrompter( CustomUpdatePrompter(this))
+                    .update();
+            }
+        }else{
+            XUpdate.newBuild(this)
+                .apkCacheDir(PathUtils.getAppExtCachePath()) //设置下载缓存的根目录
+                .updateUrl(PageRoutes.Api_appVersion)
+                .updateParser(CustomUpdateParser(this))
+                .updatePrompter( CustomUpdatePrompter(this))
+                .update();
+        }
+
     }
 
+    /**
+     * 开启设置安装未知来源应用权限界面
+     *
+     * @param context
+     */
+
+    fun startInstallPermissionSettingActivity(context: Context?) {
+        if (context == null) {
+            return
+        }
+        val intent = Intent()
+        //获取当前apk包URI，并设置到intent中（这一步设置，可让“未知应用权限设置界面”只显示当前应用的设置项）
+        val packageURI = Uri.parse("package:" + context.packageName)
+        intent.data = packageURI
+        //设置不同版本跳转未知应用的动作
+        if (Build.VERSION.SDK_INT >= 26) {
+            //intent = new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,packageURI);
+            intent.action = Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
+        } else {
+            intent.action = Settings.ACTION_SECURITY_SETTINGS
+        }
+        //Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+        (context as Activity).startActivityForResult(
+            intent,
+            10086
+        )
+
+    }
     override fun initData() {
        var nodeNoLogin = kv.getString("nodeNoLogin","")
         if(!nodeNoLogin.isNullOrEmpty()){

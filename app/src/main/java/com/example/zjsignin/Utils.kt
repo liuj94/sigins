@@ -115,7 +115,7 @@ fun takePhotoDialog(context:Activity,
                             }
                             ActionSheet.TAKE_PICTURE -> {
                                 EasyPhotos.createCamera(context, true)
-                                    .setFileProviderAuthority("com.example.signin.fileProvider")
+                                    .setFileProviderAuthority("com.example.zjsignin.fileProvider")
 
                                     .start(object : SelectCallback() {
                                         override fun onResult(

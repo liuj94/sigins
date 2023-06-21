@@ -755,3 +755,6 @@ public static java.lang.String TABLENAME;
 -keep class com.example.zjsignin.**{*;}
 -keep class com.hello.**{*;}
 
+-keep class com.xuexiang.xupdate.entity.** { *; }
+
+-keep class com.xuexiang.xupdatedemo.entity.** { *; }
