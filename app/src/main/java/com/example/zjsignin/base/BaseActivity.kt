@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Bundle
 import android.view.MotionEvent
+import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ import com.dylanc.mmkv.MMKVOwner
 import com.dylanc.viewbinding.base.ActivityBinding
 import com.dylanc.viewbinding.base.ActivityBindingDelegate
 import com.example.zjsignin.AppManager
+import com.example.zjsignin.NavigationBarUtil
 import com.tencent.mmkv.MMKV
 
 
@@ -33,6 +35,11 @@ abstract class BaseActivity<VB : ViewBinding,VM : BaseViewModel> : AppCompatActi
 
         startPendingTransition()
         initTranslucentStatus()
+        //设置无Title
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+//设置应用全屏,必须写在setContentView方法前面！！！记得！
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        NavigationBarUtil.hideNavigationBar(getWindow())
         setContentViewWithBinding()
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         mViewModel.mContext = this

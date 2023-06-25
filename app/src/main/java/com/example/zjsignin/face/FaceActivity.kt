@@ -6,9 +6,7 @@ import android.hardware.Camera
 import android.media.FaceDetector
 import android.media.MediaPlayer
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.widget.Toast
 import com.alibaba.fastjson.JSON
 import com.bifan.detectlib.FaceDetectTextureView
 import com.bumptech.glide.Glide
@@ -65,6 +63,16 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
         }
         binding.lockView.visibility = View.VISIBLE
         binding.lockView.show()
+        var img = kv.getString("deviceImg", "1")
+        if (img!!.startsWith("http")) {
+            Glide.with(this).load(img).into(binding.tu)
+        } else {
+            if (img.startsWith("/")) {
+                Glide.with(this).load(BaseUrl + img).into(binding.tu)
+            } else {
+                Glide.with(this).load(BaseUrl + "/" + img).into(binding.tu)
+            }
+        }
         binding.test.setOnClickListener { startDetect() }
         Glide.with(this@FaceActivity).load(BaseUrl).into(binding.img)
         binding.name.text = ""
@@ -99,8 +107,8 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                     faces: Array<FaceDetector.Face?>
                 ): Boolean {
                     if(isFrist){
-                        binding.lockView.hide()
-                        binding.lockView.visibility = View.GONE
+                        mainThread { binding.lockView.hide()
+                            binding.lockView.visibility = View.GONE }
                         isFrist = false
                         isSleep = false
                     }else{
@@ -142,6 +150,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
             }
 
         if(!ischunScan){
+            binding.tu.visibility = View.GONE
             mViewModel.isShowLoading.value = true
             val task: TimerTask = object : TimerTask() {
                 override fun run() {
@@ -160,45 +169,46 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
             timer.schedule(task, 1500)
         }else{
             binding.faceDetectView.visibility = View.GONE
-            binding.scan.visibility = View.GONE
+//            binding.scan.visibility = View.GONE
             issScan = true
+            binding.tu.visibility = View.VISIBLE
         }
 
-        binding.scan.setOnClickListener {
-            if (issScan) {
-                issScan = false
-                binding.scan.setText("切换纯扫码")
-                binding.faceDetectView.visibility = View.VISIBLE
-                binding.faceDetectView.startCameraPreview()
-            } else {
-                issScan = true
-                binding.scan.setText("切换人脸模式")
-                binding.faceDetectView.stopCameraPreview()
-                binding.faceDetectView.faceRectView.clearBorder()
-                binding.faceDetectView.visibility = View.GONE
-            }
-
-        }
+//        binding.scan.setOnClickListener {
+//            if (issScan) {
+//                issScan = false
+//                binding.scan.setText("切换纯扫码")
+//                binding.faceDetectView.visibility = View.VISIBLE
+//                binding.faceDetectView.startCameraPreview()
+//            } else {
+//                issScan = true
+//                binding.scan.setText("切换人脸模式")
+//                binding.faceDetectView.stopCameraPreview()
+//                binding.faceDetectView.faceRectView.clearBorder()
+//                binding.faceDetectView.visibility = View.GONE
+//            }
+//
+//        }
 
     }
 
     var issScan = false
-    private fun showToast(state: String) {
-        var toast = Toast(this)
-        var view: View = LayoutInflater.from(this).inflate(R.layout.tost_sb, null)
-        when (state) {
-            "1" -> {
-                view = LayoutInflater.from(this).inflate(R.layout.tost_cg, null)
-            }
-            "2" -> {
-                view = LayoutInflater.from(this).inflate(R.layout.tost_cf, null)
-            }
-        }
-        toast.setView(view)
-        toast.setDuration(Toast.LENGTH_LONG)
-        toast.setGravity(0, 0, 0);
-        toast.show();
-    }
+//    private fun showToast(state: String) {
+//        var toast = Toast(this)
+//        var view: View = LayoutInflater.from(this).inflate(R.layout.tost_sb, null)
+//        when (state) {
+//            "1" -> {
+//                view = LayoutInflater.from(this).inflate(R.layout.tost_cg, null)
+//            }
+//            "2" -> {
+//                view = LayoutInflater.from(this).inflate(R.layout.tost_cf, null)
+//            }
+//        }
+//        toast.setView(view)
+//        toast.setDuration(Toast.LENGTH_LONG)
+//        toast.setGravity(0, 0, 0);
+//        toast.show();
+//    }
 
     private var isSavingPic = false
     private var isScanTool = false

@@ -282,13 +282,13 @@ class LoginActivity : BaseBindingActivity<ActLoginBinding, BaseViewModel>() {
 
     private var exitTime: Long = 0
     override fun onBackPressed() {
-        if (System.currentTimeMillis() - exitTime > 2000) {
-            toast("再按一次返回退出程序")
-            exitTime = System.currentTimeMillis()
-        } else {
-
-            System.exit(0);
-        }
+//        if (System.currentTimeMillis() - exitTime > 2000) {
+//            toast("再按一次返回退出程序")
+//            exitTime = System.currentTimeMillis()
+//        } else {
+//
+//            System.exit(0);
+//        }
     }
 
 //    /*

@@ -23,6 +23,7 @@
         android:visibility="gone"
         tools:ignore="MissingConstraints" />
     <Button
+        android:visibility="gone"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
         android:layout_marginTop="40dp"
@@ -34,6 +35,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="切换纯扫码" />
+
+    <com.example.zjsignin.view.PagerLayout
+        android:id="@+id/lock_view"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+    <ImageView
+        android:id="@+id/tu"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+    <ImageView
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="40dp"
+        android:id="@+id/goback"
+        android:layout_width="60dp"
+        android:layout_height="50dp"
+        android:padding="13dp"
+        android:src="@mipmap/close" />
     <LinearLayout
         android:visibility="gone"
         android:id="@+id/jieguo"
@@ -65,71 +85,66 @@
                 android:textStyle="bold"
                 />
         </LinearLayout>
-    <LinearLayout
-        android:id="@+id/jgsb"
-        android:padding="25dp"
-        android:background="#171E2E"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView
-android:id="@+id/sbtv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="查无信息"
-            android:textColor="#ffffff"
-            android:textSize="27sp"
-            />
-    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/jgsb"
+            android:padding="25dp"
+            android:background="#171E2E"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/sbtv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="查无信息"
+                android:textColor="#ffffff"
+                android:textSize="27sp"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/jgcg"
+            android:padding="18dp"
+            android:background="#171E2E"
+            android:layout_marginTop="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <com.example.zjsignin.view.ImageViewPlus
+                android:id="@+id/img"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/ov_999"/>
             <LinearLayout
-                android:visibility="gone"
-                android:id="@+id/jgcg"
-                android:padding="18dp"
-                android:background="#171E2E"
-                android:layout_marginTop="20dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="25dp"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <com.example.zjsignin.view.ImageViewPlus
-                    android:id="@+id/img"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:background="@drawable/ov_999"/>
-                <LinearLayout
-                    android:layout_weight="1"
-                    android:layout_marginLeft="25dp"
-                    android:gravity="center_vertical"
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <TextView
-                        android:id="@+id/name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        android:textColor="#fff"
-                        android:textSize="27sp"
-                        />
-                    <TextView
-                        android:layout_marginTop="10dp"
-                        android:id="@+id/phone"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        android:textColor="#fff"
-                        android:textSize="18sp"
-                        />
-                </LinearLayout>
-
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#fff"
+                    android:textSize="27sp"
+                    />
+                <TextView
+                    android:layout_marginTop="10dp"
+                    android:id="@+id/phone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#fff"
+                    android:textSize="18sp"
+                    />
             </LinearLayout>
 
+        </LinearLayout>
+
     </LinearLayout>
-    <com.example.zjsignin.view.PagerLayout
-        android:id="@+id/lock_view"
-        android:visibility="gone"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
 </RelativeLayout>
