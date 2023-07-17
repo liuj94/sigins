@@ -11,7 +11,6 @@ import com.alibaba.fastjson.JSON
 import com.bifan.detectlib.FaceDetectTextureView
 import com.bumptech.glide.Glide
 import com.dylanc.longan.mainThread
-import com.dylanc.longan.toast
 import com.example.zjsignin.AppManager
 import com.example.zjsignin.PageRoutes
 import com.example.zjsignin.PageRoutes.Companion.BaseUrl
@@ -21,6 +20,7 @@ import com.example.zjsignin.base.BaseViewModel
 import com.example.zjsignin.bean.MeetingUserDeData
 import com.example.zjsignin.bean.SignUpUser
 import com.example.zjsignin.databinding.ActivityFaceBinding
+import com.example.zjsignin.face.ToastUtils.toast
 import com.example.zjsignin.net.RequestCallback
 import com.hello.scan.ScanCallBack
 import com.lzy.okgo.OkGo
@@ -223,7 +223,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
             binding.faceDetectView.initCamera()
             binding.faceDetectView.detectConfig.CameraType = Camera.CameraInfo.CAMERA_FACING_FRONT
             binding.faceDetectView.detectConfig.EnableFaceDetect = true
-            binding.faceDetectView.detectConfig.MinDetectTime = 500
+            binding.faceDetectView.detectConfig.MinDetectTime = 200
             binding.faceDetectView.detectConfig.Simple = 0.2f //图片检测时的压缩取样率，0~1，越小检测越流畅
             binding.faceDetectView.detectConfig.MaxDetectTime = 2000 //进入智能休眠检测，以2秒一次的这个速度检测
             binding.faceDetectView.detectConfig.EnableIdleSleepOption = true //启用智能休眠检测机制
@@ -494,7 +494,7 @@ class FaceActivity : BaseBindingActivity<ActivityFaceBinding, BaseViewModel>(), 
                 }
                 binding.jgsb.visibility = View.GONE
                 binding.jgcg.visibility = View.VISIBLE
-                binding.stateIv.setImageResource(R.mipmap.qdcgicon)
+                binding.stateIv.setImageResource(R.mipmap.qd2)
                 binding.stateTv.setText("签到成功")
 
             }
